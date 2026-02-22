@@ -1,0 +1,62 @@
+# SanBERTa Configuration for Sanskrit NavaRasa Classification
+
+model:
+  name: SanBERTa
+  hub_name: surajp/SanBERTa
+  architecture: RobertaForSequenceClassification
+  parameters: 125M
+  max_length: 256
+  note: "Sanskrit-native model; requires pad_token set to eos_token"
+
+training:
+  learning_rate: 2.0e-5
+  batch_size: 16
+  epochs: 10
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  lr_scheduler: cosine
+  optimizer: adamw_torch
+  gradient_accumulation_steps: 2
+  max_grad_norm: 1.0
+  fp16: true
+  bf16: false
+
+peft:
+  use_lora: true
+  lora_r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  target_modules: ["query", "key", "value", "dense"]
+  modules_to_save: ["classifier"]
+
+cross_validation:
+  n_splits: 5
+  shuffle: true
+  random_state: 42
+
+loss:
+  type: focal_with_label_smoothing  # Better for class imbalance
+  focal_gamma: 2.0
+  label_smoothing: 0.1
+  class_weight_strategy: balanced
+
+early_stopping:
+  patience: 3
+  metric: eval_loss
+  greater_is_better: false
+
+data:
+  path: ../../data/processed/SanskritRasaBank_v1.xlsx
+  text_column: sanskrit_text
+  label_column: Final_rasa
+
+labels:
+  - Adbhuta
+  - Bhayanaka
+  - Bibhatsa
+  - Hasya
+  - Karuna
+  - Raudra
+  - Shanta
+  - Shringara
+  - Veera

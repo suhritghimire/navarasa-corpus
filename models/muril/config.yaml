@@ -1,0 +1,57 @@
+# MuRIL Model Configuration for Sanskrit NavaRasa Classification
+
+model:
+  name: MuRIL
+  hub_name: google/muril-large-cased
+  architecture: BertForSequenceClassification
+  parameters: 236M
+  max_length: 256
+
+training:
+  learning_rate: 2.0e-5
+  batch_size: 32
+  epochs: 10
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  lr_scheduler: cosine
+  optimizer: adamw_torch
+  gradient_accumulation_steps: 2
+  max_grad_norm: 1.0
+  fp16: true             # Enable on CUDA GPU
+  bf16: false
+
+cross_validation:
+  n_splits: 5
+  shuffle: true
+  random_state: 42
+
+loss:
+  type: weighted_cross_entropy  # Handles class imbalance
+  class_weight_strategy: balanced
+
+early_stopping:
+  patience: 3
+  metric: eval_loss
+  greater_is_better: false
+
+data:
+  path: ../../data/processed/SanskritRasaBank_v1.xlsx
+  text_column: sanskrit_text
+  label_column: Final_rasa
+
+output:
+  models_dir: ../../results/models/muril/
+  checkpoints_dir: ../../results/checkpoints/muril/
+  logs_dir: ../../results/logs/muril/
+  checkpoint_file: training_checkpoint.json
+
+labels:
+  - Adbhuta
+  - Bhayanaka
+  - Bibhatsa
+  - Hasya
+  - Karuna
+  - Raudra
+  - Shanta
+  - Shringara
+  - Veera

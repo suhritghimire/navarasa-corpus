@@ -1,0 +1,34 @@
+# ============================================================
+# Navarasa Classification — Unified Requirements
+# ============================================================
+# Install with: pip install -r requirements.txt
+# For model-specific requirements see models/<model>/requirements.txt
+
+# Core ML
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+
+# Transformers ecosystem
+transformers>=4.38.0
+accelerate>=0.27.0
+peft>=0.5.0           # LoRA for IndicBERT & XLM-RoBERTa
+datasets>=2.15.0
+
+# Tokenizers
+sentencepiece>=0.1.99
+
+# Data processing
+pandas>=1.5.0
+numpy>=1.24.0
+openpyxl>=3.0.0       # For reading .xlsx files
+
+# Metrics & visualization
+scikit-learn>=1.0.0
+matplotlib>=3.5.0
+seaborn>=0.12.0
+statsmodels>=0.14.0
+
+# Utilities
+tqdm>=4.65.0
+psutil>=5.9.0

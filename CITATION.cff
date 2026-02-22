@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this dataset or code, please cite it as below."
+type: dataset
+title: "SanskritRasaBank: A 23k-Sample Human-Validated Sanskrit Corpus for Computational NavaRasa Analysis"
+abstract: >
+  The first large-scale, human-validated dataset for Sanskrit rasa (aesthetic sentiment)
+  classification. Contains 12,548 high-confidence annotated verses from the Vālmīki
+  Rāmāyaṇa and supplementary Sanskrit texts, labeled across 9 NavaRasa categories
+  using a 3-LLM ensemble (GPT-4o, DeepSeek, Groq) and validated by a Sanskrit
+  domain expert. Benchmarks four multi-lingual transformer models with MuRIL achieving
+  88.99% accuracy, matching GPT-4o (~200B parameters) at only 236M parameters.
+authors:
+  - family-names: "Ghimire"
+    given-names: "Suhrit"
+    affiliation: "Your Institution"
+keywords:
+  - Sanskrit
+  - NavaRasa
+  - sentiment analysis
+  - emotion classification
+  - natural language processing
+  - computational humanities
+  - low-resource NLP
+  - Indic NLP
+  - MuRIL
+  - Ramayana
+license:
+  - CC-BY-4.0    # dataset
+  - MIT          # code
+version: "1.0.0"
+date-released: "2025-02-22"
+url: "https://github.com/YOUR_USERNAME/SanskritRasaBank"
+repository-code: "https://github.com/YOUR_USERNAME/SanskritRasaBank"

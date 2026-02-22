@@ -1,0 +1,59 @@
+# XLM-RoBERTa-large Configuration for Sanskrit NavaRasa Classification
+
+model:
+  name: XLM-RoBERTa-large
+  hub_name: xlm-roberta-large
+  architecture: AutoModelForSequenceClassification
+  parameters: 560M
+  max_length: 256
+
+training:
+  learning_rate: 2.0e-5
+  batch_size: 8           # Reduced due to large model size
+  epochs: 10
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  lr_scheduler: cosine
+  optimizer: adamw_torch
+  gradient_accumulation_steps: 4   # Effective batch size = 32
+  max_grad_norm: 1.0
+  fp16: true
+  bf16: false
+
+peft:
+  use_lora: true
+  lora_r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  target_modules: ["query", "value"]
+  modules_to_save: ["classifier"]
+
+cross_validation:
+  n_splits: 5
+  shuffle: true
+  random_state: 42
+
+loss:
+  type: weighted_cross_entropy
+  class_weight_strategy: balanced
+
+early_stopping:
+  patience: 3
+  metric: eval_loss
+  greater_is_better: false
+
+data:
+  path: ../../data/processed/SanskritRasaBank_v1.xlsx
+  text_column: sanskrit_text
+  label_column: Final_rasa
+
+labels:
+  - Adbhuta
+  - Bhayanaka
+  - Bibhatsa
+  - Hasya
+  - Karuna
+  - Raudra
+  - Shanta
+  - Shringara
+  - Veera

@@ -1,0 +1,54 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Model weights (too large for git -- upload to HuggingFace Hub instead)
+models/*/checkpoints/
+results/models/
+results/checkpoints/
+results/logs/
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.pkl
+
+# API keys / secrets
+.env
+*.env
+secrets.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Training artifacts
+training_checkpoint.json
+ramayana_checkpoint.csv
+ramayana_results_parallel_retried.csv
+
+# Large data files -- keep annotated data in git-lfs or HuggingFace Datasets
+# Uncomment the lines below if you want to exclude raw data from git:
+# data/raw/*.xlsx
+# data/annotated/*.xlsx
+# data/processed/*.xlsx
