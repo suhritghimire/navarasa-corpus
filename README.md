@@ -1,4 +1,4 @@
-# 🕉️ NavaRasaBank
+#  NavaRasaBank
 > **The First Large-Scale, Human-Validated Corpus for Computational Rasa Analysis in Sanskrit.**
 
 [![License: CC BY 4.0](https://img.shields.io/badge/Data%20License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
@@ -28,7 +28,7 @@ For over two millennia, the *Nāṭyaśāstra* framework has defined nine fundam
 
 ---
 
-## 📊 Dataset Statistics
+##  Dataset Statistics
 Our corpus was constructed using a **validated LLM-ensemble framework** (GPT-4o, DeepSeek-V2, LLaMA-3.1) and audited by an expert Sanskrit Philologist (94% agreement).
 
 *   **Total Samples (High-Confidence):** 12,548
@@ -38,7 +38,7 @@ Our corpus was constructed using a **validated LLM-ensemble framework** (GPT-4o,
 
 ---
 
-## 🏆 Model Benchmarks
+##  Model Benchmarks
 We fine-tuned across four major multilingual architectures. **MuRIL-large** emerged as the state-of-the-art specialist for Sanskrit Rasa classification.
 
 | Model | Accuracy (%) | Weighted F1 | Macro F1 |
@@ -52,7 +52,7 @@ We fine-tuned across four major multilingual architectures. **MuRIL-large** emer
 
 ---
 
-## 🏗️ Project Structure
+##  Project Structure
 ```bash
 SanskritRasaBank/
 ├── data/               # Raw, Annotated, and Filtered (Gold) datasets
@@ -65,7 +65,7 @@ SanskritRasaBank/
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Installation
 ```bash
@@ -86,7 +86,7 @@ print(classifier(verse))
 
 ---
 
-## 📜 Citation
+##  Citation
 If you use this project or dataset, please cite our ACL paper:
 
 ```bibtex
@@ -101,7 +101,7 @@ If you use this project or dataset, please cite our ACL paper:
 
 ---
 
-## ❤️ Acknowledgments
+##  Acknowledgments
 Special thanks to **Prof. Rohini Raj Timilsina** (Tribhuvan University) for the expert validation of the corpus labels. 
 
 ---
