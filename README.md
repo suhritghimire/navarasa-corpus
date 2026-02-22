@@ -1,4 +1,4 @@
-# 🕉️ SanskritRasaBank
+# 🕉️ NavaRasaBank
 > **The First Large-Scale, Human-Validated Corpus for Computational Rasa Analysis in Sanskrit.**
 
 [![License: CC BY 4.0](https://img.shields.io/badge/Data%20License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
@@ -69,8 +69,8 @@ SanskritRasaBank/
 
 ### Installation
 ```bash
-git clone https://github.com/suhritghimire/SanskritRasaBank.git
-cd SanskritRasaBank
+git clone https://github.com/suhritghimire/NavaRasaBank.git
+cd NavaRasaBank
 pip install -r requirements.txt
 ```
 
@@ -78,7 +78,7 @@ pip install -r requirements.txt
 ```python
 from transformers import pipeline
 
-classifier = pipeline("text-classification", model="suhritghimire/muril-rasabank")
+classifier = pipeline("text-classification", model="suhritghimire/navarasa-bank")
 verse = "तो रामो महातेजा भ्रातरं निहतं रणे। दृष्ट्वा क्रोधसमाविष्टो बभूव ज्वलिताननः॥"
 print(classifier(verse)) 
 # Output: [{'label': 'Raudra', 'score': 0.941}]
@@ -90,8 +90,8 @@ print(classifier(verse))
 If you use this project or dataset, please cite our ACL paper:
 
 ```bibtex
-@inproceedings{ghimire2025sanskritrasabank,
-  title={Nine Flavors: SanskritRasaBank, an LLM-Ensemble Corpus for Computational NavaRasa Analysis},
+@inproceedings{ghimire2025navarasabank,
+  title={Nine Flavors: NavaRasaBank, an LLM-Ensemble Corpus for Computational NavaRasa Analysis},
   author={Ghimire, Suhrit and {et al.}},
   booktitle={Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing},
   year={2025},
@@ -105,4 +105,4 @@ If you use this project or dataset, please cite our ACL paper:
 Special thanks to **Prof. Rohini Raj Timilsina** (Tribhuvan University) for the expert validation of the corpus labels. 
 
 ---
-© 2025 SanskritRasaBank Team. Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) & [MIT](LICENSE).
+© 2025 NavaRasaBank Team. Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) & [MIT](LICENSE).
