@@ -35,7 +35,7 @@ Our corpus was constructed using a **validated LLM-ensemble framework** (GPT-4o,
 *   **Total Corpus (Global Pool):** 29,902
 *   **Validation:** Expert-checked 500-sample probe.
 *   **Balancing:** Augmented the primary *Rāmāyaṇa* corpus with supplementary texts to fix the 'rare-rasa' (Hāsya, Bībhatsa) tail.
-*   **Generalization Case Study:** Tested on 7,197 verses of the *Mahābhārata* (*Ādi Parva*), achieving excellent results for primary rasas (Śānta, Vīra, Karuṇā). Found a systematic stylistic bias in introductory genealogical formulas being mislabeled as Hāsya (see Case Study in the paper).
+*   **Generalization Case Study:** Successfully tested on the *Sauptika Parva* (Mahābhārata Book 10). The model accurately captured the narrative's "dark turn," with **Bhayānaka (Terror) spiking to 18.1%** (vs 2.1% in Rāmāyaṇa). Identified minor Hāsya bias due to rhetorical lamentation overlap (see paper for deep analysis).
 
 ---
 
