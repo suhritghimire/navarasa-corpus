@@ -1,3 +1,4 @@
+% !TeX program = xelatex
 \documentclass[11pt]{article}
 
 % IMPORTANT: This document requires the ACL style file (acl.sty).
@@ -9,7 +10,6 @@
 \usepackage{times}
 \usepackage{latexsym}
 \usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
 \usepackage{microtype}
 \usepackage{inconsolata}
 \usepackage{graphicx}
@@ -18,17 +18,12 @@
 \usepackage{multirow}
 
 \usepackage{mwe}
-\usepackage{ifxetex}
 
-\ifxetex
-  \usepackage{fontspec}
-  % FreeSerif is a reliable fallback on Overleaf for many scripts
-  \newfontfamily\devanagarifont[Script=Devanagari]{FreeSerif}
-  \newcommand{\skt}[1]{{\devanagarifont #1}}
-\else
-  \usepackage[utf8]{inputenc}
-  \newcommand{\skt}[1]{#1}
-\fi
+% FORCE XELATEX / UNICODE SUPPORT
+% This block ensures Devanagari renders correctly.
+\usepackage{fontspec}
+\newfontfamily\devanagarifont[Script=Devanagari]{FreeSerif}
+\newcommand{\skt}[1]{{\devanagarifont #1}}
 
 % Adjust table column spacing for wide tables (global default)
 \setlength{\tabcolsep}{4pt} % default is 6pt; reduce a bit
@@ -44,11 +39,11 @@ Tribhuvan University \\
 \texttt{info@navarasabank.org}}
 
 \begin{document}
-\ifxetex
+% Rendering Test
 \begin{center}
-\fbox{\textbf{Diagnostic Check:} \skt{नमस्ते - Sanskrit Rendering Test}}
+\fbox{\textbf{Sanskrit Rendering Test:} \skt{नमस्ते - सुस्वागतम्}}
 \end{center}
-\fi
+
 \maketitle
 
 \begin{abstract}
