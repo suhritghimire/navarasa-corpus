@@ -522,15 +522,25 @@ MuRIL, with 236M parameters, achieves near-GPT-4o performance on rasa classifica
     \item \textbf{Deployment:} A fine-tuned MuRIL can be embedded in digital humanities platforms, manuscript libraries, or educational tools without API dependencies
 \end{itemize}
 
-\subsection{Cross-Corpus Generalization: The Sauptika Parva Case Study}
+\section{Empirical Case Studies}
 
-To rigorously test the generalizability of \texttt{SanskritRasaBank}, we conducted a zero-shot evaluation on the \textit{Sauptika Parva} (Mahābhārata, Book 10)---one of the darkest and most violent segments of Sanskrit literature. 
+\subsection{The Rāmāyaṇa Narrative Arc}
 
-\textbf{Quantitative Success in Terror Detection:} The model effectively captured the ``dark turn'' of the narrative. While \textit{Bhayānaka} (Terror) accounts for only ~2.1\% of the \textit{Rāmāyaṇa}, it spiked to \textbf{18.1\%} in Book 10. Similarly, \textit{Raudra} (Fury) was identified at 12.4\%. This demonstrate that the model is not merely memorizing \textit{Rāmāyaṇa} motifs but has learned robust semantic features for high-intensity negative affect.
+We conducted full-corpus inference on the 18,670 verses of the \textit{Rāmāyaṇa} to evaluate the model's alignment with literary theory. As shown in our detailed analysis, the model captures the structural emotional signature of each \textit{Kāṇḍa}: 
+\begin{itemize}
+    \item \textbf{Ayodhya Kanda}: \textit{Karuṇā} (Grief) dominates at 56.8\%, reflecting the tragedy of Rama's exile.
+    \item \textbf{Yuddha Kanda}: \textit{Raudra} (Fury) peaks at 42.9\% during the climax of the war.
+    \item \textbf{Bala Kanda}: \textit{Vīra} (Heroism) is the primary rasa (33.7\%) as it catalogs Rama's early valor.
+\end{itemize}
+This quantitative alignment provides empirical validation for traditional rasa-attribution in Sanskrit scholarship.
 
-\textbf{Lamentation vs. Humor Artifacts:} We observe a persistent bias where 22.7\% of verses are labeled as \textit{Hāsya} (Humor). Qualitative analysis reveals that MuRIL misinterprets the rhetorical lamentations of Dhritarashtra (e.g., \textit{``kathaṃ nu...''} / ``How indeed...?'') as ironic or humorous. This stems from a stylistic overlap with the \textit{Pañcatantra} fables (our source for \textit{Hāsya} balancing), which use similar frame-narrative structures. 
+\subsection{Cross-Corpus Generalization: The Sauptika Parva}
 
-\textbf{Insight:} The Rāmāyaṇa-trained MuRIL acts as a powerful \textit{Heroic Epic Specialist}. It correctly identifies the shift from \textit{Rāmāyaṇa}'s tragic heroism to \textit{Mahābhārata}'s darker terror, while currently being sensitive to the stylistic artifacts of lamentation. This confirms the model's readiness for broad Sanskrit digital humanities applications while highlighting the importance of genre-aware fine-tuning.
+To rigorously test the generalizability of \texttt{SanskritRasaBank}, we conducted a zero-shot evaluation on the \textit{Sauptika Parva} (Mahābhārata, Book 10). 
+
+\textbf{Quantitative Success in Terror Detection:} The model effectively captured the ``dark turn'' of the narrative. While \textit{Bhayānaka} (Terror) accounts for only 2.1\% of the \textit{Rāmāyaṇa}, it spiked to \textbf{18.1\%} in Book 10. This demonstrates that MuRIL has learned robust semantic features for high-intensity negative affect that generalize beyond its training corpus.
+
+\textbf{Qualitative Bias Analysis:} We observe a persistent bias where ~22\% of verses are labeled as \textit{Hāsya} (Humor). Qualitative inspection reveals that MuRIL misinterprets Dhritarashtra's rhetorical lamentations as ironic or humorous due to stylistic overlap with fable-based training data. This finding identifies the ``Generalization Gap'' caused by stylistic domain artifacts, pointing towards the need for multi-genre training to disentangle sentiment from stylistic signatures.
 
 \section{Limitations and Future Work}
 
