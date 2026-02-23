@@ -21,12 +21,13 @@
 \usepackage{ifxetex}
 
 \ifxetex
-  \usepackage{polyglossia}
-  \setmainlanguage{english}
-  \setotherlanguage{sanskrit}
-  \newfontfamily\sanskritfont[Script=Devanagari]{Noto Sans Devanagari}
+  \usepackage{fontspec}
+  % FreeSerif is a reliable fallback on Overleaf for many scripts
+  \newfontfamily\devanagarifont[Script=Devanagari]{FreeSerif}
+  \newcommand{\skt}[1]{{\devanagarifont #1}}
 \else
   \usepackage[utf8]{inputenc}
+  \newcommand{\skt}[1]{#1}
 \fi
 
 % Adjust table column spacing for wide tables (global default)
@@ -43,6 +44,11 @@ Tribhuvan University \\
 \texttt{info@navarasabank.org}}
 
 \begin{document}
+\ifxetex
+\begin{center}
+\fbox{\textbf{Diagnostic Check:} \skt{नमस्ते - Sanskrit Rendering Test}}
+\end{center}
+\fi
 \maketitle
 
 \begin{abstract}
@@ -690,15 +696,15 @@ Table \ref{tab:rasa_samples} provides representative verses for each of the nine
 \toprule
 \textbf{Rasa} & \textbf{Representative Verse (Sanskrit)} & \textbf{Source / Genre} \\
 \midrule
-\textbf{Śṛṅgāra} & \ifxetex\textsanskrit{मम रूपगुणाढ्यस्य भार्या लोकविश्रुता। उपाहृतेयमबला यथा प्राणभुगेव मे।।3.21.3।।}\else{मम रूपगुणाढ्यस्य भार्या लोकविश्रुता। उपाहृतेयमबला यथा प्राणभुगेव मे।।3.21.3।।}\fi & Aranya Kanda \\
-\textbf{Hāsya} & \ifxetex\textsanskrit{ततो हसन्नुवाचेदं लक्ष्मणं शुभलक्षणम्। नैतादृशा भवन्त्यत्र मया दृष्टास्तपस्विन:।।1.52.22।।}\else{ततो हसन्नुवाचेदं लक्ष्मणं शुभलक्षणम्। नैतादृशा भवन्त्यत्र मया दृष्टास्तपस्विन:।।1.52.22।।}\fi & Bala Kanda \\
-\textbf{Karuṇā} & \ifxetex\textsanskrit{ततस्स्वजनेनेष्टेन विहीनस्तापसोनुजः। कृपणं करुणं चैव विललाप मुहुर्मुहु:।।6.19.14।।}\else{ततस्स्वजनेनेष्टेन विहीनस्तापसोनुजः। कृपणं करुणं चैव विललाप मुहुर्मुहु:।।6.19.14।।}\fi & Yuddha Kanda \\
-\textbf{Raudra} & \ifxetex\textsanskrit{विदितं वो यथा रात्रौ मायावी स महासुरः 4.10.13।। मां समाह्वयत क्रूरो युद्धाकाङ्क्षी सुदुर्मतिः।}\else{विदितं वो यथा रात्रौ मायावी स महासुरः 4.10.13।। मां समाह्वयत क्रूरो युद्धाकाङ्क्षी सुदुर्मतिः।}\fi & Kishkindha Kanda \\
-\textbf{Vīra} & \ifxetex\textsanskrit{तस्माद्गृहीत्वा वैदेहीं शरपाणिर्धनुर्धरः। गुहामाश्रय शैलस्य दुर्गां पादपसङ्कुलाम्।।3.24.12।।}\else{तस्माद्गृहीत्वा वैदेहीं शरपाणिर्धनुर्धरः। गुहामाश्रय शैलस्य दुर्गां पादपसङ्कुलाम्।।3.24.12।।}\fi & Aranya Kanda \\
-\textbf{Bhayānaka} & \ifxetex\textsanskrit{श्मशाने घनरात्रौ ताः शवशुष्कलताः स्थिताः। वाताहताः कम्पमाना यान्ति भूतविभीषिकाम्॥}\else{श्मशाने घनरात्रौ ताः शवशुष्कलताः स्थिताः। वाताहताः कम्पमाना यान्ति भूतविभीषिकाम्॥}\fi & Narrative (Vetalp.) \\
-\textbf{Bībhatsa} & \ifxetex\textsanskrit{कपालकुण्डलितं तद् दन्तधावनपल्लवं पुराणम् । दृष्ट्वा जनाः प्रकुपिता वदन्ति किमेतद् दृढं मलिनतालिङ्गनम् ॥}\else{कपालकुण्डलितं तद् दन्तधावनपल्लवं पुराणम् । दृष्ट्वा जनाः प्रकुपिता वदन्ति किमेतद् दृढं मलिनतालिङ्गनम् ॥}\fi & Didactic (Pancat.) \\
-\textbf{Adbhuta} & \ifxetex\textsanskrit{स्त्रीबालवृद्धाः निर्जग्मुस्तत्र तत्र कुतूहलात्।।5.53.23।। तं प्रदीपितलाङ्गूलं हनुमन्तं दिदृक्षवः।}\else{स्त्रीबालवृद्धाः निर्जग्मुस्तत्र तत्र कुतूहलात्।।5.53.23।। तं प्रदीपितलाङ्गूलं हनुमन्तं दिदृक्षवः।}\fi & Sundara Kanda \\
-\textbf{Śānta} & \ifxetex\textsanskrit{क्षमा दानं क्षमा यज्ञः क्षमा सत्यं हि पुत्रिका:।।1.33.8।। क्षमा यश: क्षमा धर्म: क्षमया निष्ठितं जगत्।}\else{क्षमा दानं क्षमा यज्ञः क्षमा सत्यं हि पुत्रिका:।।1.33.8।। क्षमा यश: क्षमा धर्म: क्षमया निष्ठितं जगत्।}\fi & Bala Kanda \\
+\textbf{Śṛṅgāra} & \skt{मम रूपगुणाढ्यस्य भार्या लोकविश्रुता। उपाहृतेयमबला यथा प्राणभुगेव मे।।3.21.3।।} & Aranya Kanda \\
+\textbf{Hāsya} & \skt{ततो हसन्नुवाचेदं लक्ष्मणं शुभलक्षणम्। नैतादृशा भवन्त्यत्र मया दृष्टास्तपस्विन:।।1.52.22।।} & Bala Kanda \\
+\textbf{Karuṇā} & \skt{ततस्स्वजनेनेष्टेन विहीनस्तापसोनुजः। कृपणं करुणं चैव विललाप मुहुर्मुहु:।।6.19.14।।} & Yuddha Kanda \\
+\textbf{Raudra} & \skt{विदितं वो यथा रात्रौ मायावी स महासुरः 4.10.13।। मां समाह्वयत क्रूरो युद्धाकाङ्क्षी सुदुर्मतिः।} & Kishkindha Kanda \\
+\textbf{Vīra} & \skt{तस्माद्गृहीत्वा वैदेहीं शरपाणिर्धनुर्धरः। गुहामाश्रय शैलस्य दुर्गां पादपसङ्कुलाम्।।3.24.12।।} & Aranya Kanda \\
+\textbf{Bhayānaka} & \skt{श्मशाने घनरात्रौ ताः शवशुष्कलताः स्थिताः। वाताहताः कम्पमाना यान्ति भूतविभीषिकाम्॥} & Narrative (Vetalp.) \\
+\textbf{Bībhatsa} & \skt{कपालकुण्डलितं तद् दन्तधावनपल्लवं पुराणम् । दृष्ट्वा जनाः प्रकुपिता वदन्ति किमेतद् दृढं मलिनतालिङ्गनम् ॥} & Didactic (Pancat.) \\
+\textbf{Adbhuta} & \skt{स्त्रीबालवृद्धाः निर्जग्मुस्तत्र तत्र कुतूहलात्।।5.53.23।। तं प्रदीपितलाङ्गूलं हनुमन्तं दिदृक्षवः।} & Sundara Kanda \\
+\textbf{Śānta} & \skt{क्षमा दानं क्षमा यज्ञः क्षमा सत्यं हि पुत्रिका:।।1.33.8।। क्षमा यश: क्षमा धर्म: क्षमया निष्ठितं जगत्।} & Bala Kanda \\
 \bottomrule
 \end{tabular}
 \caption{Qualitative Samples of Nava-Rasa from the \texttt{SanskritRasaBank} Corpus.}
