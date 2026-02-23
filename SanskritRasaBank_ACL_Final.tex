@@ -18,12 +18,17 @@
 \usepackage{multirow}
 
 \usepackage{mwe}
+\usepackage{ifxetex}
 
-% FORCE XELATEX / UNICODE SUPPORT
-% This block ensures Devanagari renders correctly.
-\usepackage{fontspec}
-\newfontfamily\devanagarifont[Script=Devanagari]{FreeSerif}
-\newcommand{\skt}[1]{{\devanagarifont #1}}
+\ifxetex
+  \usepackage{fontspec}
+  \newfontfamily\devanagarifont[Script=Devanagari]{FreeSerif}
+  \newcommand{\skt}[1]{{\devanagarifont #1}}
+\else
+  % This block prevents the crash on pdflatex
+  \usepackage[utf8]{inputenc}
+  \newcommand{\skt}[1]{\textbf{[Sanskrit Text Hidden: Switch to XeLaTeX to View]}}
+\fi
 
 % Adjust table column spacing for wide tables (global default)
 \setlength{\tabcolsep}{4pt} % default is 6pt; reduce a bit
@@ -39,12 +44,21 @@ Tribhuvan University \\
 \texttt{info@navarasabank.org}}
 
 \begin{document}
-% Rendering Test
-\begin{center}
-\fbox{\textbf{Sanskrit Rendering Test:} \skt{नमस्ते - सुस्वागतम्}}
-\end{center}
 
-\maketitle
+\ifxetex
+  \begin{center}
+    \fbox{\textbf{Sanskrit Rendering Test:} \skt{नमस्ते - सुस्वागतम्}}
+  \end{center}
+\else
+  \begin{center}
+    \color{red}
+    \fbox{\parbox{0.8\textwidth}{\centering \textbf{CRITICAL ACTION REQUIRED IN OVERLEAF} \\ 
+    Your project is currently using \textbf{pdfLaTeX}, which cannot display Sanskrit. \\ 
+    1. Click the \textbf{Menu} button at the very top-left. \\ 
+    2. Under \textbf{Compiler}, change it to \textbf{XeLaTeX}. \\ 
+    3. Recompile to see the Devanagari text.}}
+  \end{center}
+\fi
 
 \begin{abstract}
 The \textit{Nāṭyaśāstra} of Bharata Muni classifies aesthetic human emotion into nine \textit{rasas}---essences that have governed Sanskrit literary criticism for over two millennia. Despite the profound heritage of Sanskrit literature, computational modeling of \textit{rasa} remains unexplored due to the lack of annotated corpora. We introduce \texttt{SanskritRasaBank}, the first large-scale dataset for Sanskrit \textit{rasa} classification, containing 23,028 expert-validated verse annotations from the \textit{Vālmīki Rāmāyaṇa} and supplementary classical texts. Our core methodological contribution is a validated LLM-ensemble annotation framework: three models (GPT-4o, DeepSeek-V2, and LLaMA-3.1) independently label each verse, with unanimous consensus required for inclusion to ensure high-confidence training data. A Sanskrit philologist validated a 500-verse stratified sample, yielding 94\% agreement with the ensemble labels. The inter-LLM agreement (mean Cohen's $\kappa=0.528$) quantifies the inherent ambiguity of \textit{rasa}, mirroring the subjectivity observed in traditional scholarship. Benchmarking four multilingual transformers under five-fold cross-validation, we find that MuRIL achieves 88.99\% accuracy and 90.42\% Macro-F1---matching GPT-4o's zero-shot performance with $850\times$ fewer parameters. Corpus-level analysis reveals a striking alignment between computational distributions and classical \textit{Rāmāyaṇa} scholarship, providing the first empirical grounding for the emotional landscape described by traditional critics. All data, models, and code are publicly released at \url{https://github.com/suhritghimire/NavaRasaBank}.
