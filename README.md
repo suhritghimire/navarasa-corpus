@@ -107,7 +107,7 @@ If you use this project or dataset, please cite our ACL paper:
 ---
 
 ##  Acknowledgments
-Special thanks to **Prof. Rohini Raj Timilsina** (Tribhuvan University) for the expert validation of the corpus labels. 
+Special thanks to **Assistant Professor Rohini Raj Timilsina** (Tribhuvan University) for the expert validation of the corpus labels. 
 
 ---
 © 2025 NavaRasaBank Team. Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) & [MIT](LICENSE).

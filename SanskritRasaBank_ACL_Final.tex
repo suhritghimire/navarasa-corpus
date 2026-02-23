@@ -29,9 +29,9 @@
 
 \title{Tasting Nine Flavors: SanskritRasaBank, an LLM-Ensemble Corpus for Computational Navarasa Analysis}
 
-\author{Author Name\textsuperscript{1} \and Co-author Name\textsuperscript{2} \\
-\textsuperscript{1}Institution 1, \textsuperscript{2}Institution 2 \\
-\texttt{\{author1,author2\}@institution.edu}}
+% \author{Author Name\textsuperscript{1} \and Co-author Name\textsuperscript{2} \\
+% \textsuperscript{1}Institution 1, \textsuperscript{2}Institution 2 \\
+% \texttt{\{author1,author2\}@institution.edu}}
 
 \begin{document}
 \maketitle
@@ -106,7 +106,7 @@ All three were given an identical system prompt specifying the nine rasa definit
     \item \textit{Malformed output} (LLM returned non-rasa text): treated as a failed prediction, row excluded
 \end{itemize}
 
-\textbf{Stage 3: Human Expert Validation.} Sanskrit Professor Rohini Raj Timilsina (Department of Sanskrit, Tribhuvan University) independently labeled a randomly drawn stratified sample of 500 verses. Comparing expert labels to Final\_rasa labels yielded agreement on 470+ of 500 samples (94\%). Disagreements arose primarily from multi-rasa verses where both labelings were defensible. For example:
+\textbf{Stage 3: Human Expert Validation.} Assistant Professor Rohini Raj Timilsina (Department of Sanskrit, Tribhuvan University) independently labeled a randomly drawn stratified sample of 500 verses. Comparing expert labels to Final\_rasa labels yielded agreement on 470+ of 500 samples (94\%). Disagreements arose primarily from multi-rasa verses where both labelings were defensible. For example:
 
 \begin{quote}
 \small
@@ -264,8 +264,8 @@ MuRIL-large-cased & ~236M & \makecell{17 Indian languages\\+ transliteration} \\
 Model & LR & Batch Size & Epochs & \makecell{Fine-tuning /\\Loss Function} \\
 \midrule
 MuRIL & 2e-5 & 32 & 10 & \makecell{Full fine-tuning,\\Weighted\\CrossEntropy} \\
-\makecell{IndicBERT-v2} & 2e-5 & 16 & 10 & \makecell{LoRA (r=16),\\Weighted CrossEntropy} \\
-\makecell{XLM-RoBERTa-\\large} & 2e-5 & 16 & 10 & \makecell{LoRA (r=16),\\Weighted CrossEntropy} \\
+\makecell{IndicBERT-v2} & 2e-5 & 16 & 10 & \makecell{LoRA (r=16),\\Weighted \\ CrossEntropy} \\
+\makecell{XLM-RoBERTa-\\large} & 2e-5 & 16 & 10 & \makecell{LoRA (r=16),\\Weighted\\  CrossEntropy} \\
 SanBERTa & 2e-5 & 16 & 10 & \makecell{LoRA (r=16),\\Focal Loss +\\Label Smoothing} \\
 \bottomrule
 \end{tabular}
@@ -567,7 +567,7 @@ We introduced SanskritRasaBank, the first large-scale corpus for Sanskrit rasa c
 
 \section*{Acknowledgments}
 
-The authors thank Professor Rohini Raj Timilsina (Department of Sanskrit, Tribhuvan University) for expert annotation validation. We acknowledge Lightning AI for providing free GPU computing resources that supported this research. This work was conducted in accordance with the terms of service of all LLM APIs used.
+The authors thank Assistant Professor Rohini Raj Timilsina (Department of Sanskrit, Tribhuvan University) for expert annotation validation. We acknowledge Lightning AI for providing free GPU computing resources that supported this research. This work was conducted in accordance with the terms of service of all LLM APIs used.
 
 % References as a thebibliography environment
 \begin{thebibliography}{99}
