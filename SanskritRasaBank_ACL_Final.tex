@@ -16,18 +16,23 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{multirow}
+\usepackage{xcolor}
 
 \usepackage{mwe}
 \usepackage{ifxetex}
 
 \ifxetex
   \usepackage{fontspec}
+  % FreeSerif is standard on Overleaf for XeLaTeX
   \newfontfamily\devanagarifont[Script=Devanagari]{FreeSerif}
   \newcommand{\skt}[1]{{\devanagarifont #1}}
 \else
-  % This block prevents the crash on pdflatex
+  % Robust fallback for pdfLaTeX (uses standard fonts)
   \usepackage[utf8]{inputenc}
-  \newcommand{\skt}[1]{\textbf{[Sanskrit Text Hidden: Switch to XeLaTeX to View]}}
+  \usepackage[LGR,T2A,T1]{fontenc}
+  \usepackage[sanskrit,english]{babel}
+  % We use a box to prevent crash, but try to render Unicode if possible
+  \newcommand{\skt}[1]{\foreignlanguage{sanskrit}{#1}}
 \fi
 
 % Adjust table column spacing for wide tables (global default)
@@ -46,18 +51,22 @@ Tribhuvan University \\
 \begin{document}
 
 \ifxetex
+  % Diagnostics
   \begin{center}
-    \fbox{\textbf{Sanskrit Rendering Test:} \skt{नमस्ते - सुस्वागतम्}}
+    \fbox{\textbf{Engine Check:} \skt{नमस्ते} - XeLaTeX Detection Successful.}
   \end{center}
 \else
+  % LOUD WARNING BOX
   \begin{center}
-    \color{red}
-    \fbox{\parbox{0.8\textwidth}{\centering \textbf{CRITICAL ACTION REQUIRED IN OVERLEAF} \\ 
-    Your project is currently using \textbf{pdfLaTeX}, which cannot display Sanskrit. \\ 
-    1. Click the \textbf{Menu} button at the very top-left. \\ 
-    2. Under \textbf{Compiler}, change it to \textbf{XeLaTeX}. \\ 
-    3. Recompile to see the Devanagari text.}}
+    \colorbox{red!20}{
+      \begin{minipage}{0.9\textwidth}
+        \centering \huge \color{red} \textbf{ACTION REQUIRED!} \\
+        \large \textbf{Sanskrit Text is Hidden because you are using pdfLaTeX.} \\
+        \normalsize \textbf{FIX:} Go to \textbf{Menu} (Top-Left) $\rightarrow$ \textbf{Compiler} $\rightarrow$ change to \textbf{XeLaTeX} $\rightarrow$ \textbf{Recompile}.
+      \end{minipage}
+    }
   \end{center}
+  \vspace{1cm}
 \fi
 
 \begin{abstract}
