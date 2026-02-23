@@ -38,7 +38,8 @@ Our corpus was constructed using a **validated LLM-ensemble framework** (GPT-4o,
 
 ### 🔬 Research Discoveries
 - **The Rāmāyaṇa Narrative Arc**: Successfully quantified the emotional signature of each Kāṇḍa (e.g., Ayodhyā = 56.8% Karuṇā; Yuddha = 42.9% Raudra).
-- **Vedic Generalization**: Zero-shot evaluation on **Rigveda Maṇḍala 1** revealed a 54.21% Vīra dominance, perfectly capturing the heroic nature of Agni/Indra hymns with zero Hāsya bias.
+- **Vedic Generalization (Maṇḍala 1)**: Zero-shot evaluation on **Rigveda** revealed a 54.21% Vīra dominance.
+    - **Minute Insights**: Agni (65.7% Vīra) and Indra (60.2% Vīra) show high heroic alignment, while Soma hymns exhibit a contemplative turn with 27.2% Karuṇā.
 
 ---
 
