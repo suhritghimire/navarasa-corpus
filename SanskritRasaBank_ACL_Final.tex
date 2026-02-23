@@ -12,27 +12,22 @@
 \usepackage[T1]{fontenc}
 \usepackage{microtype}
 \usepackage{inconsolata}
+\usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{multirow}
-\usepackage{xcolor}
 
 \usepackage{mwe}
 \usepackage{ifxetex}
 
 \ifxetex
   \usepackage{fontspec}
-  % FreeSerif is standard on Overleaf for XeLaTeX
   \newfontfamily\devanagarifont[Script=Devanagari]{FreeSerif}
   \newcommand{\skt}[1]{{\devanagarifont #1}}
 \else
-  % Robust fallback for pdfLaTeX (uses standard fonts)
   \usepackage[utf8]{inputenc}
-  \usepackage[LGR,T2A,T1]{fontenc}
-  \usepackage[sanskrit,english]{babel}
-  % We use a box to prevent crash, but try to render Unicode if possible
-  \newcommand{\skt}[1]{\foreignlanguage{sanskrit}{#1}}
+  \newcommand{\skt}[1]{#1}
 \fi
 
 % Adjust table column spacing for wide tables (global default)
@@ -49,25 +44,7 @@ Tribhuvan University \\
 \texttt{info@navarasabank.org}}
 
 \begin{document}
-
-\ifxetex
-  % Diagnostics
-  \begin{center}
-    \fbox{\textbf{Engine Check:} \skt{नमस्ते} - XeLaTeX Detection Successful.}
-  \end{center}
-\else
-  % LOUD WARNING BOX
-  \begin{center}
-    \colorbox{red!20}{
-      \begin{minipage}{0.9\textwidth}
-        \centering \huge \color{red} \textbf{ACTION REQUIRED!} \\
-        \large \textbf{Sanskrit Text is Hidden because you are using pdfLaTeX.} \\
-        \normalsize \textbf{FIX:} Go to \textbf{Menu} (Top-Left) $\rightarrow$ \textbf{Compiler} $\rightarrow$ change to \textbf{XeLaTeX} $\rightarrow$ \textbf{Recompile}.
-      \end{minipage}
-    }
-  \end{center}
-  \vspace{1cm}
-\fi
+\maketitle
 
 \begin{abstract}
 The \textit{Nāṭyaśāstra} of Bharata Muni classifies aesthetic human emotion into nine \textit{rasas}---essences that have governed Sanskrit literary criticism for over two millennia. Despite the profound heritage of Sanskrit literature, computational modeling of \textit{rasa} remains unexplored due to the lack of annotated corpora. We introduce \texttt{SanskritRasaBank}, the first large-scale dataset for Sanskrit \textit{rasa} classification, containing 23,028 expert-validated verse annotations from the \textit{Vālmīki Rāmāyaṇa} and supplementary classical texts. Our core methodological contribution is a validated LLM-ensemble annotation framework: three models (GPT-4o, DeepSeek-V2, and LLaMA-3.1) independently label each verse, with unanimous consensus required for inclusion to ensure high-confidence training data. A Sanskrit philologist validated a 500-verse stratified sample, yielding 94\% agreement with the ensemble labels. The inter-LLM agreement (mean Cohen's $\kappa=0.528$) quantifies the inherent ambiguity of \textit{rasa}, mirroring the subjectivity observed in traditional scholarship. Benchmarking four multilingual transformers under five-fold cross-validation, we find that MuRIL achieves 88.99\% accuracy and 90.42\% Macro-F1---matching GPT-4o's zero-shot performance with $850\times$ fewer parameters. Corpus-level analysis reveals a striking alignment between computational distributions and classical \textit{Rāmāyaṇa} scholarship, providing the first empirical grounding for the emotional landscape described by traditional critics. All data, models, and code are publicly released at \url{https://github.com/suhritghimire/NavaRasaBank}.
@@ -75,13 +52,13 @@ The \textit{Nāṭyaśāstra} of Bharata Muni classifies aesthetic human emotion
 
 \section{Introduction}
 
-Language carries not just meaning but taste---an aesthetic dimension that ancient Indian theorists called rasa (रस), literally "essence" or "flavor." The Nāṭyaśāstra of Bharata Muni, composed between the 2nd century BCE and 2nd century CE, enumerated nine such essences: love (Śṛṅgāra), laughter (Hāsya), grief (Karuṇā), fury (Raudra), heroism (Vīra), terror (Bhayānaka), disgust (Bībhatsa), wonder (Adbhuta), and serenity (Śānta). For over two millennia, this framework has structured how scholars read, perform, and judge Sanskrit literature. Today, as computational humanities intersects with natural language processing, a fundamental question emerges: can machines learn to taste what poets intended?
+Language carries not just meaning but taste---an aesthetic dimension that ancient Indian theorists called rasa, literally "essence" or "flavor." The Nāṭyaśāstra of Bharata Muni, composed between the 2nd century BCE and 2nd century CE, enumerated nine such essences: love (Śṛṅgāra), laughter (Hāsya), grief (Karuṇā), fury (Raudra), heroism (Vīra), terror (Bhayānaka), disgust (Bībhatsa), wonder (Adbhuta), and serenity (Śānta). For over two millennia, this framework has structured how scholars read, perform, and judge Sanskrit literature. Today, as computational humanities intersects with natural language processing, a fundamental question emerges: can machines learn to taste what poets intended?
 
 This paper addresses that question for the first time for Sanskrit at scale. We identify three intertwined challenges that have blocked progress. First, there is no labeled Sanskrit rasa corpus---prior computational work on Sanskrit focuses almost exclusively on grammar, morphology, and \textit{sandhi} (phonological fusion), leaving the semantic-emotional dimension untouched. Second, Sanskrit's linguistic properties confound standard NLP pipelines: extensive inflectional morphology, \textit{sandhi} compounding across word boundaries, and the absence of modern orthographic markers make even tokenization non-trivial. Third, the rasa framework is inherently ambiguous: a single verse can legitimately instantiate multiple rasas simultaneously, as exemplified by Rāma's transformation from grief to rage upon seeing his fallen brother (Karuṇā dissolving into Raudra within a single hemistich).
 
 Beyond the dataset itself, we introduce a methodology for LLM-ensemble annotation---validated by a domain expert---that serves as a replicable blueprint for low-resource classical languages. We then present a systematic benchmark of four multilingual transformer architectures under five-fold cross-validation, establishing the first quantitative performance baselines for Sanskrit rasa classification. Finally, we provide a corpus-level literary analysis, demonstrating that computational rasa distributions align with classical Vālmīki scholarship, thereby offering an empirical grounding for centuries-old literary intuitions. Our analysis further reveals that a fine-tuned 236M-parameter model achieves strong performance, presenting a compelling efficiency argument for domain-specific fine-tuning in classical humanities.
 
-The remainder of this paper is organized as follows: Section 2 reviews related work; Section 3 describes dataset construction; Section 4 covers model architectures and training; Section 5 presents results; Section 6 provides literary analysis; Section 7 discusses implications; Section 8 concludes with limitations and future work.
+The remainder of this paper is organized as follows: Section 2 reviews related work; Section 3 describes dataset construction; Section 4 covers model architectures and training; Section 5 presents results; Section 6 -- 10 provide literary analysis and discussion; Section 11 concludes with limitations and future work.
 
 \section{Related Work}
 
@@ -561,7 +538,7 @@ Since we used \textit{Rāmāyaṇa} data to train the model, to rigorously evalu
 
 \subsection{The Rāmāyaṇa Narrative Arc}
 
-We conducted a full-corpus inference on 18,670 verses of the \textit{Rāmāyaṇa}. As shown in our analysis, the model capture the structural emotional signature of each \textit{Kāṇḍa} with surgical precision: 
+We conducted a full-corpus inference on the digitized 23,402 verses of the \textit{Rāmāyaṇa}. As shown in Table~\ref{tab:kanda}, the model captures the structural emotional signature of each \textit{Kāṇḍa} with surgical precision: 
 \begin{itemize}
     \item \textbf{Ayodhya Kanda}: \textit{Karuṇā} (Grief) dominates at \textbf{56.8\%}, reflecting the central tragedy of Rama's exile.
     \item \textbf{Yuddha Kanda}: \textit{Raudra} (Fury) peaks at \textbf{42.9\%}, capturing the high-intensity wrath of the climatic war.
@@ -714,15 +691,15 @@ Table \ref{tab:rasa_samples} provides representative verses for each of the nine
 \toprule
 \textbf{Rasa} & \textbf{Representative Verse (Sanskrit)} & \textbf{Source / Genre} \\
 \midrule
-\textbf{Śṛṅgāra} & \skt{मम रूपगुणाढ्यस्य भार्या लोकविश्रुता। उपाहृतेयमबला यथा प्राणभुगेव मे।।3.21.3।।} & Aranya Kanda \\
-\textbf{Hāsya} & \skt{ततो हसन्नुवाचेदं लक्ष्मणं शुभलक्षणम्। नैतादृशा भवन्त्यत्र मया दृष्टास्तपस्विन:।।1.52.22।।} & Bala Kanda \\
-\textbf{Karuṇā} & \skt{ततस्स्वजनेनेष्टेन विहीनस्तापसोनुजः। कृपणं करुणं चैव विललाप मुहुर्मुहु:।।6.19.14।।} & Yuddha Kanda \\
-\textbf{Raudra} & \skt{विदितं वो यथा रात्रौ मायावी स महासुरः 4.10.13।। मां समाह्वयत क्रूरो युद्धाकाङ्क्षी सुदुर्मतिः।} & Kishkindha Kanda \\
-\textbf{Vīra} & \skt{तस्माद्गृहीत्वा वैदेहीं शरपाणिर्धनुर्धरः। गुहामाश्रय शैलस्य दुर्गां पादपसङ्कुलाम्।।3.24.12।।} & Aranya Kanda \\
-\textbf{Bhayānaka} & \skt{श्मशाने घनरात्रौ ताः शवशुष्कलताः स्थिताः। वाताहताः कम्पमाना यान्ति भूतविभीषिकाम्॥} & Narrative (Vetalp.) \\
-\textbf{Bībhatsa} & \skt{कपालकुण्डलितं तद् दन्तधावनपल्लवं पुराणम् । दृष्ट्वा जनाः प्रकुपिता वदन्ति किमेतद् दृढं मलिनतालिङ्गनम् ॥} & Didactic (Pancat.) \\
-\textbf{Adbhuta} & \skt{स्त्रीबालवृद्धाः निर्जग्मुस्तत्र तत्र कुतूहलात्।।5.53.23।। तं प्रदीपितलाङ्गूलं हनुमन्तं दिदृक्षवः।} & Sundara Kanda \\
-\textbf{Śānta} & \skt{क्षमा दानं क्षमा यज्ञः क्षमा सत्यं हि पुत्रिका:।।1.33.8।। क्षमा यश: क्षमा धर्म: क्षमया निष्ठितं जगत्।} & Bala Kanda \\
+\textbf{Śṛṅgāra} & \ifxetex\textsanskrit{मम रूपगुणाढ्यस्य भार्या लोकविश्रुता। उपाहृतेयमबला यथा प्राणभुगेव मे।।3.21.3।।}\else{मम रूपगुणाढ्यस्य भार्या लोकविश्रुता। उपाहृतेयमबला यथा प्राणभुगेव मे।।3.21.3।।}\fi & Aranya Kanda \\
+\textbf{Hāsya} & \ifxetex\textsanskrit{ततो हसन्नुवाचेदं लक्ष्मणं शुभलक्षणम्। नैतादृशा भवन्त्यत्र मया दृष्टास्तपस्विन:।।1.52.22।।}\else{ततो हसन्नुवाचेदं लक्ष्मणं शुभलक्षणम्। नैतादृशा भवन्त्यत्र मया दृष्टास्तपस्विन:।।1.52.22।।}\fi & Bala Kanda \\
+\textbf{Karuṇā} & \ifxetex\textsanskrit{ततस्स्वजनेनेष्टेन विहीनस्तापसोनुजः। कृपणं करुणं चैव विललाप मुहुर्मुहु:।।6.19.14।।}\else{ततस्स्वजनेनेष्टेन विहीनस्तापसोनुजः। कृपणं करुणं चैव विललाप मुहुर्मुहु:।।6.19.14।।}\fi & Yuddha Kanda \\
+\textbf{Raudra} & \ifxetex\textsanskrit{विदितं वो यथा रात्रौ मायावी स महासुरः 4.10.13।। मां समाह्वयत क्रूरो युद्धाकाङ्क्षी सुदुर्मतिः।}\else{विदितं वो यथा रात्रौ मायावी स महासुरः 4.10.13।। मां समाह्वयत क्रूरो युद्धाकाङ्क्षी सुदुर्मतिः।}\fi & Kishkindha Kanda \\
+\textbf{Vīra} & \ifxetex\textsanskrit{तस्माद्गृहीत्वा वैदेहीं शरपाणिर्धनुर्धरः। गुहामाश्रय शैलस्य दुर्गां पादपसङ्कुलाम्।।3.24.12।।}\else{तस्माद्गृहीत्वा वैदेहीं शरपाणिर्धनुर्धरः। गुहामाश्रय शैलस्य दुर्गां पादपसङ्कुलाम्।।3.24.12।।}\fi & Aranya Kanda \\
+\textbf{Bhayānaka} & \ifxetex\textsanskrit{श्मशाने घनरात्रौ ताः शवशुष्कलताः स्थिताः। वाताहताः कम्पमाना यान्ति भूतविभीषिकाम्॥}\else{श्मशाने घनरात्रौ ताः शवशुष्कलताः स्थिताः। वाताहताः कम्पमाना यान्ति भूतविभीषिकाम्॥}\fi & Narrative (Vetalp.) \\
+\textbf{Bībhatsa} & \ifxetex\textsanskrit{कपालकुण्डलितं तद् दन्तधावनपल्लवं पुराणम् । दृष्ट्वा जनाः प्रकुपिता वदन्ति किमेतद् दृढं मलिनतालिङ्गनम् ॥}\else{कपालकुण्डलितं तद् दन्तधावनपल्लवं पुराणम् । दृष्ट्वा जनाः प्रकुपिता वदन्ति किमेतद् दृढं मलिनतालिङ्गनम् ॥}\fi & Didactic (Pancat.) \\
+\textbf{Adbhuta} & \ifxetex\textsanskrit{स्त्रीबालवृद्धाः निर्जग्मुस्तत्र तत्र कुतूहलात्।।5.53.23।। तं प्रदीपितलाङ्गूलं हनुमन्तं दिदृक्षवः।}\else{स्त्रीबालवृद्धाः निर्जग्मुस्तत्र तत्र कुतूहलात्।।5.53.23।। तं प्रदीपितलाङ्गूलं हनुमन्तं दिदृक्षवः।}\fi & Sundara Kanda \\
+\textbf{Śānta} & \ifxetex\textsanskrit{क्षमा दानं क्षमा यज्ञः क्षमा सत्यं हि पुत्रिका:।।1.33.8।। क्षमा यश: क्षमा धर्म: क्षमया निष्ठितं जगत्।}\else{क्षमा दानं क्षमा यज्ञः क्षमा सत्यं हि पुत्रिका:।।1.33.8।। क्षमा यश: क्षमा धर्म: क्षमया निष्ठितं जगत्।}\fi & Bala Kanda \\
 \bottomrule
 \end{tabular}
 \caption{Qualitative Samples of Nava-Rasa from the \texttt{SanskritRasaBank} Corpus.}
