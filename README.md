@@ -35,7 +35,10 @@ Our corpus was constructed using a **validated LLM-ensemble framework** (GPT-4o,
 *   **Total Corpus (Global Pool):** 29,902
 *   **Validation:** Expert-checked 500-sample probe.
 *   **Balancing:** Augmented the primary *Rāmāyaṇa* corpus with supplementary texts to fix the 'rare-rasa' (Hāsya, Bībhatsa) tail.
-*   **Generalization Case Study:** Successfully tested on the *Sauptika Parva* (Mahābhārata Book 10). The model accurately captured the narrative's "dark turn," with **Bhayānaka (Terror) spiking to 18.1%** (vs 2.1% in Rāmāyaṇa). Identified minor Hāsya bias due to rhetorical lamentation overlap (see paper for deep analysis).
+
+### 🔬 Research Discoveries
+- **The Rāmāyaṇa Narrative Arc**: Successfully quantified the emotional signature of each Kāṇḍa (e.g., Ayodhyā = 56.8% Karuṇā; Yuddha = 42.9% Raudra).
+- **Vedic Generalization**: Zero-shot evaluation on **Rigveda Maṇḍala 1** revealed a 54.21% Vīra dominance, perfectly capturing the heroic nature of Agni/Indra hymns with zero Hāsya bias.
 
 ---
 
