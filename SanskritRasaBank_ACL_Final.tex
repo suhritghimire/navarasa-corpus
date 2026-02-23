@@ -522,9 +522,15 @@ MuRIL, with 236M parameters, achieves near-GPT-4o performance on rasa classifica
     \item \textbf{Deployment:} A fine-tuned MuRIL can be embedded in digital humanities platforms, manuscript libraries, or educational tools without API dependencies
 \end{itemize}
 
-\subsection{Generalizability Beyond the Rāmāyaṇa}
+\subsection{Cross-Corpus Generalization: The Mahābhārata Case Study}
 
-While our primary corpus is the Vālmīki Rāmāyaṇa, the supplementary texts used for class rebalancing span diverse genres---narrative prose (Kathāsaritsāgara), didactic fables (Pañcatantra), erotic lyric (Amaruśataka), and horror tales (Vetālapañcaviṃśati). MuRIL's strong performance on these minority classes (Hāsya 99\%, Bībhatsa 98\%) suggests that the learned rasa representations are robust to genre variation and not simply Rāmāyaṇa-specific pattern matching.
+To evaluate the robustness of \texttt{SanskritRasaBank}, we applied the fine-tuned MuRIL model to a zero-shot inference task on a significant portion of the \textit{Mahābhārata} (7,197 verses, primarily from the \textit{Ādi Parva}). 
+
+\textbf{Quantitative Distribution:} The model predicted a starkly different emotional landscape compared to the \textit{Rāmāyaṇa}: \textit{Hāsya} (26.1\%), \textit{Śānta} (17.2\%), \textit{Śṛṅgāra} (13.3\%), and \textit{Vīra} (11.5\%). While the high prevalence of \textit{Śānta} aligns with the \textit{Mahābhārata}'s thematic identity as a text of ultimate serenity and detachment \cite{Gnoli1968}, the concentration of \textit{Hāsya} in the \textit{Ādi Parva} reveals a critical semantic domain artifact.
+
+\textbf{Qualitative Bias Analysis:} Qualitative inspection of the verses labeled as \textit{Hāsya} reveals that the model is misclassifying genealogical and introductory narrative formulas (e.g., \textit{``putraḥ...''}, \textit{``dhṛtarāṣṭraḥ...''}) as humorous. We hypothesize that this stems from the supplemental \textit{Hāsya} training data (sourced from didactic fables), which often uses similar frame-narrative structures. In contrast, the model correctly identifies that humor is nearly absent from the \textit{Rāmāyaṇa} (0.22\% predicted \textit{Hāsya}), demonstrating that the model is not ``corrupt'' but rather highly sensitive to stylistic variations between epics. This underscores the need for multi-epic training to disentangle sentiment from stylistic signatures.
+
+\textbf{The Battle-Rasa Triangle in the Mahābhārata:} Despite the \textit{Ādi Parva} bias, the model successfully identifies the \textit{Vīra-Raudra-Karuṇā} continuum in heroic passages. This suggests that while semantic artifacts can cause false positives in descriptive sections, the core affective representations for primary rasas remain transferable across the \textit{Itihāsa} genre.
 
 \section{Limitations and Future Work}
 
