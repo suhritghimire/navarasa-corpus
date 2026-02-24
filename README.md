@@ -1,113 +1,104 @@
-#  NavaRasaBank
-> **The First Large-Scale, Human-Validated Corpus for Computational Rasa Analysis in Sanskrit.**
+# 🏛️ NavaRasa Corpus
 
-[![License: CC BY 4.0](https://img.shields.io/badge/Data%20License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
-[![License: MIT](https://img.shields.io/badge/Code%20License-MIT-blue.svg)](LICENSE)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![arXiv](https://img.shields.io/badge/arXiv-2502.XXXXX-red.svg)](https://arxiv.org/)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+[![Dataset Size](https://img.shields.io/badge/Verses-17%2C147-green)]()
+[![Annotators](https://img.shields.io/badge/Annotators-4%20LLMs-orange)]()
 
----
+**NavaRasa Corpus** is the first large-scale Sanskrit verse dataset annotated with *Navarasa* — the nine aesthetic sentiments (*rasas*) from Indian classical aesthetics theory (Nāṭyaśāstra of Bharata Muni).
 
-## 📖 Overview
-**SanskritRasaBank** is a state-of-the-art dataset and benchmarking suite designed to bridge the gap between classical Indian aesthetics (**Nava-Rasa**) and modern Natural Language Processing. 
-
-For over two millennia, the *Nāṭyaśāstra* framework has defined nine fundamental "essences" of human emotion. This project provides the first computational grounding for these rasas at scale, featuring **23,028 human-validated annotations** from the *Vālmīki Rāmāyaṇa* and other classical texts.
-
-### The Nine Rasas (Nava-Rasa)
-| Rasa | Meaning | Dominant Emotion |
-|:---:|---|---|
-| **Śṛṅgāra** | Love / Beauty | Rati (Love) |
-| **Hāsya** | Laughter / Humor | Hāsa (Mirth) |
-| **Karuṇā** | Grief / Compassion | Śoka (Sorrow) |
-| **Raudra** | Fury / Anger | Krodha (Anger) |
-| **Vīra** | Heroism / Valor | Utsāha (Enthusiasm) |
-| **Bhayānaka** | Terror / Fear | Bhaya (Fear) |
-| **Bībhatsa** | Disgust / Revulsion | Jugupsā (Disgust) |
-| **Adbhuta** | Wonder / Amazement | Vismaya (Wonder) |
-| **Śānta** | Serenity / Peace | Śama (Calmness) |
+> 📄 **Paper**: *NavaRasaBank: A Multi-Annotator Sanskrit Rasa Classification Corpus* — under review at ACL 2025.
 
 ---
 
-##  Dataset Statistics
-Our corpus was constructed using a **validated LLM-ensemble framework** (GPT-4o, DeepSeek-V2, LLaMA-3.1) and audited by an expert Sanskrit Philologist (94% agreement).
+## 🎯 Overview
 
-*   **Total Samples (High-Confidence):** 12,548
-*   **Total Corpus (Global Pool):** 29,902
-*   **Validation:** Expert-checked 500-sample probe.
-*   **Balancing:** Augmented the primary *Rāmāyaṇa* corpus with supplementary texts to fix the 'rare-rasa' (Hāsya, Bībhatsa) tail.
+Sanskrit literature is deeply governed by *rasa* theory. This dataset enables computational study of aesthetic sentiment in classical Sanskrit texts for the first time at scale.
 
-### 🔬 Research Discoveries
-- **The Rāmāyaṇa Narrative Arc**: Successfully quantified the emotional signature of each Kāṇḍa (e.g., Ayodhyā = 56.8% Karuṇā; Yuddha = 42.9% Raudra).
-- **Vedic Generalization (Maṇḍala 1)**: Zero-shot evaluation on **Rigveda** revealed a 54.21% Vīra dominance.
-    - **Minute Insights**: Agni (65.7% Vīra) and Indra (60.2% Vīra) show high heroic alignment, while Soma hymns exhibit a contemplative turn with 27.2% Karuṇā.
-
----
-
-##  Model Benchmarks
-We fine-tuned across four major multilingual architectures. **MuRIL-large** emerged as the state-of-the-art specialist for Sanskrit Rasa classification.
-
-| Model | Accuracy (%) | Weighted F1 | Macro F1 |
-|:---|:---:|:---:|:---:|
-| **MuRIL (Specialist)** ⭐ | **88.99** | **89.05** | **90.42** |
-| IndicBERT-v2 | 86.71 | 86.83 | 87.29 |
-| XLM-RoBERTa-large | 84.52 | 84.61 | 85.03 |
-| SanBERTa | 61.40 | 61.53 | 59.87 |
-
-> **Efficiency Win:** Our 236M-parameter MuRIL matches GPT-4o performance on overall accuracy while beating it on **Macro-F1 (+1.26 points)**, demonstrating the power of domain-specific fine-tuning.
+| Metric | Value |
+|--------|-------|
+| Total Verses | **17,147** |
+| Annotators | **4** (GPT-4o-mini, DeepSeek-chat, Llama-3.3-70B, Gemini Flash) |
+| Sources | 12+ GRETIL texts |
+| Languages | Sanskrit (Devanāgarī) |
+| Label Format | Single rasa per verse |
 
 ---
 
-##  Project Structure
+## 🌸 The Nine Rasas
+
+| Rasa | Meaning | Bhāva |
+|------|---------|-------|
+| Śṛṅgāra | Love / Romance | Rati |
+| Hāsya | Humor | Hāsa |
+| Karuṇa | Compassion | Śoka |
+| Raudra | Fury | Krodha |
+| Vīra | Heroism | Utsāha |
+| Bhayānaka | Terror | Bhaya |
+| Bībhatsa | Disgust | Jugupsā |
+| Adbhuta | Wonder | Vismaya |
+| Śānta | Serenity | Sama |
+
+---
+
+## 📚 Sources
+
+Drawn from 12+ classical Sanskrit texts via [GRETIL](http://gretil.sub.uni-goettingen.de/):
+- Abhijñānaśākuntalam (Kālidāsa)
+- Meghadūta (Kālidāsa)
+- Raghuvaṃśa (Kālidāsa)
+- Subhāṣitaratnakoṣa
+- Mahāsubhāṣitasaṅgraha
+- Kathāsaritsāgara
+- Kirātārjunīya
+- Bhallaṭaśataka
+- Harikeli-Nāṭaka Prīti
+- Harirdatta-Ratna
+- And more...
+
+---
+
+## 🏗️ Pipeline
+
+```
+build_gretil_dataset.py       # Scrape & extract verses from GRETIL HTML
+annotation/pipeline.py         # Multi-annotator ensemble labeling
+label_final_openai.py          # GPT-4o-mini (OpenAI Batch API)
+label_final_deepseek.py        # DeepSeek-chat (parallel)
+label_groq_70b.py              # Llama-3.3-70B via Groq
+openai_batch_retrieve_all.py   # Merge batch results
+```
+
+---
+
+## 📊 Agreement Statistics
+
+| Pair | Agreement |
+|------|-----------|
+| OpenAI vs DeepSeek | **57.0%** |
+| Groq vs OpenAI | 37.1% |
+| Triple Agreement | **27.1%** |
+
+**High-confidence gold set** (2+ of 3 annotators agree): **8,726 verses**
+
+---
+
+## 🚀 Quickstart
+
 ```bash
-SanskritRasaBank/
-├── data/               # Raw, Annotated, and Filtered (Gold) datasets
-├── models/             # fine-tuning scripts for MuRIL, IndicBERT, etc.
-├── annotation/         # The 3-LLM Ensemble Pipeline source code
-├── evaluation/         # Literary analysis & error tracking (Sankey/Radar)
-├── results/            # Pre-computed metrics, confusion matrices, and predictions
-└── notebooks/          # Exploratory analysis and literary visualizations
+pip install pandas openpyxl
+python build_gretil_dataset.py
 ```
 
 ---
 
-##  Quick Start
-
-### Installation
-```bash
-git clone https://github.com/suhritghimire/NavaRasaBank.git
-cd NavaRasaBank
-pip install -r requirements.txt
-```
-
-### Inference Snippet
-```python
-from transformers import pipeline
-
-classifier = pipeline("text-classification", model="suhritghimire/navarasa-bank")
-verse = "तो रामो महातेजा भ्रातरं निहतं रणे। दृष्ट्वा क्रोधसमाविष्टो बभूव ज्वलिताननः॥"
-print(classifier(verse)) 
-# Output: [{'label': 'Raudra', 'score': 0.941}]
-```
-
----
-
-##  Citation
-If you use this project or dataset, please cite our ACL paper:
+## 📋 Citation
 
 ```bibtex
-@inproceedings{ghimire2025navarasabank,
-  title={Nine Flavors: NavaRasaBank, an LLM-Ensemble Corpus for Computational NavaRasa Analysis},
-  author={Ghimire, Suhrit and {et al.}},
-  booktitle={Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing},
-  year={2025},
-  publisher={Association for Computational Linguistics}
+@dataset{ghimire2025navarasa,
+  title     = {NavaRasa Corpus: A Multi-Annotator Sanskrit Rasa Classification Dataset},
+  author    = {Ghimire, Suhrit},
+  year      = {2025},
+  note      = {Under review at ACL 2025}
 }
 ```
-
----
-
-##  Acknowledgments
-Special thanks to **Assistant Professor Rohini Raj Timilsina** (Tribhuvan University) for the expert validation of the corpus labels. 
-
----
-© 2025 NavaRasaBank Team. Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) & [MIT](LICENSE).
