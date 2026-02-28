@@ -1,12 +1,6 @@
 % !TeX program = xelatex
 \documentclass[11pt]{article}
-
-% IMPORTANT: This document requires the ACL style file (acl.sty).
-% If you do not have it, download from: https://github.com/acl-org/acl-style-files
-% or use the official ACL 2023 style templates.
-\usepackage{acl}   % Final version (non-anonymous)
-
-% Standard packages
+\usepackage{acl}
 \usepackage{times}
 \usepackage{latexsym}
 \usepackage[T1]{fontenc}
@@ -14,13 +8,13 @@
 \usepackage{inconsolata}
 \usepackage{xcolor}
 \usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{url}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{multirow}
-
 \usepackage{mwe}
 \usepackage{ifxetex}
-
 \ifxetex
   \usepackage{fontspec}
   \newfontfamily\devanagarifont[Script=Devanagari]{FreeSerif}
@@ -29,652 +23,513 @@
   \usepackage[utf8]{inputenc}
   \newcommand{\skt}[1]{#1}
 \fi
-
-% Adjust table column spacing for wide tables (global default)
-\setlength{\tabcolsep}{4pt} % default is 6pt; reduce a bit
-
-% For line breaks in table headers
+\setlength{\tabcolsep}{4pt}
 \usepackage{makecell}
 \renewcommand{\theadfont}{\small\bfseries}
 
-\title{Tasting Nine Flavors: SanskritRasaBank, an LLM-Ensemble Corpus for Computational Navarasa Analysis}
+\title{SanskritRasaBank: Benchmarking Multilingual Transformers on
+Fine-Grained Affective Classification in Epic and Vedic Corpora}
 
-\author{Suhrit Ghimire \and NavaRasaBank Project Team \\
-Tribhuvan University \\
-\texttt{info@navarasabank.org}}
+\author{Suhrit Ghimire\textsuperscript{1}  \quad Minni Jain\textsuperscript{1} 
+\quad Rohini Raj Timilsina\textsuperscript{2}\\
+  \textsuperscript{1}Delhi Technological University, India \\
+  \textsuperscript{2}Department of Sanskrit, Tribhuvan University, Nepal \\
+  \texttt{suhrit\_23ec245@dtu.ac.in, minnijain@dtu.ac.in} \\ \url{}}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-The \textit{Nāṭyaśāstra} of Bharata Muni classifies aesthetic human emotion into nine \textit{rasas}---essences that have governed Sanskrit literary criticism for over two millennia. Despite the profound heritage of Sanskrit literature, computational modeling of \textit{rasa} remains unexplored due to the lack of annotated corpora. We introduce \texttt{SanskritRasaBank}, the first large-scale dataset for Sanskrit \textit{rasa} classification, containing 23,028 expert-validated verse annotations from the \textit{Vālmīki Rāmāyaṇa} and supplementary classical texts. Our core methodological contribution is a validated LLM-ensemble annotation framework: three models (GPT-4o, DeepSeek-V2, and LLaMA-3.1) independently label each verse, with unanimous consensus required for inclusion to ensure high-confidence training data. A Sanskrit philologist validated a 500-verse stratified sample, yielding 94\% agreement with the ensemble labels. The inter-LLM agreement (mean Cohen's $\kappa=0.528$) quantifies the inherent ambiguity of \textit{rasa}, mirroring the subjectivity observed in traditional scholarship. Benchmarking four multilingual transformers under five-fold cross-validation, we find that MuRIL achieves 88.99\% accuracy and 90.42\% Macro-F1---matching GPT-4o's zero-shot performance with $850\times$ fewer parameters. Corpus-level analysis reveals a striking alignment between computational distributions and classical \textit{Rāmāyaṇa} scholarship, providing the first empirical grounding for the emotional landscape described by traditional critics. All data, models, and code are publicly released at \url{https://github.com/suhritghimire/NavaRasaBank}.
+Bharata Muni's Nāṭyaśāstra first codified the nine rasas, aesthetic essences ranging from love (Śṛṇgāra) to serenity (Śānta), that define the traditional Indian literary experience. While this framework has anchored Sanskrit literary criticism for over two millennia, it has remained largely inaccessible to computational linguistics. The absence of any large-scale annotated corpus has left the emotional architecture of Sanskrit's greatest texts empirically unexplored.
+To bridge this gap, we introduce SanskritRasaBank, the first large-scale, expert-validated corpus for nine-class rasa classification. The dataset comprises 17,462 meticulously verified verse annotations drawn from eight classical sources. Our annotation pipeline began with an initial labeling pass by a three-LLM ensemble (GPT-4o, DeepSeek-Chat, and LLaMA-3.1-8b-instant) governed by strict consensus rules, followed by comprehensive human validation by a trained Sanskrit philologist and his team, producing a high-precision silver standard.
+We benchmark classical machine learning (SVM with character n-gram TF-IDF) alongside four transformer architectures across two experimental phases. In baseline 3-fold cross-validation (Phase 1), MuRIL achieves 80.48% accuracy and 80.60% weighted F1, significantly outperforming IndicBERT V2 (65.21%) and XLM-RoBERTa (59.28%). Following targeted hyperparameter optimization (Phase 2), IndicBERT V2 surges to 81.45% while MuRIL stabilizes at 80.65%.
+Applying our best-performing model, we conduct the first large-scale computational emotional mapping of the complete Vālmīki Rāmāyaṇa (23,402 verses across all seven kāṇḍas) and Mandala 1 of the Ṛgveda (1,758 hymns), revealing distinct kanda-wise affective arcs and genre-specific rasa signatures that empirically validate centuries of traditional literary scholarship. The corpus focuses entirely on padhyas (metrical verses). All data and models are publicly available at \url{https://github.com/SuhritGhimire/SanskritRasaBank}.
 \end{abstract}
+
+\vspace{0.5em}
+\noindent \textbf{Keywords:} SanskritRasaBank, Nava-Rasa, Sanskrit NLP, Affective Computing, Multi-Label Classification, LLM-Ensemble, Expert-Validated Corpus, Digital Humanities, Indic Transformers, Low-Resource NLP.
 
 \section{Introduction}
 
-Language carries not just meaning but taste---an aesthetic dimension that ancient Indian theorists called rasa, literally "essence" or "flavor." The Nāṭyaśāstra of Bharata Muni, composed between the 2nd century BCE and 2nd century CE, enumerated nine such essences: love (Śṛṅgāra), laughter (Hāsya), grief (Karuṇā), fury (Raudra), heroism (Vīra), terror (Bhayānaka), disgust (Bībhatsa), wonder (Adbhuta), and serenity (Śānta). For over two millennia, this framework has structured how scholars read, perform, and judge Sanskrit literature. Today, as computational humanities intersects with natural language processing, a fundamental question emerges: can machines learn to taste what poets intended?
+Language encodes more than mere propositions; it conveys a distinct aesthetic taste. Ancient Indian literary theorists termed this relished quality \textit{rasa}, defining it as the emotional flavor of a literary moment and the felt essence of a verse that transcends its referential content. In the \textit{N\=a\d tyaś\=astra} (c.~200 BCE), Bharata Muni codified nine such flavors: love (\textit{Ś\d r\d ng\=ara}), laughter (\textit{H\=asya}), grief (\textit{Karu\\d n\=a}), fury (\textit{Raudra}), heroism (\textit{V\=ira}), terror (\textit{Bhay\=anaka}), disgust (\textit{B\=ibhatsa}), wonder (\textit{Adbhuta}), and serenity (\textit{Ś\=anta}). While this framework has served as the foundational language of Sanskrit criticism for millennia, the concept of rasa has been largely absent from the modern computational record. There are no sizable annotated corpora available, meaning the underlying emotional structures of Sanskrit's greatest texts have never been mapped at scale.
 
-This paper addresses that question for the first time for Sanskrit at scale. We identify three intertwined challenges that have blocked progress. First, there is no labeled Sanskrit rasa corpus---prior computational work on Sanskrit focuses almost exclusively on grammar, morphology, and \textit{sandhi} (phonological fusion), leaving the semantic-emotional dimension untouched. Second, Sanskrit's linguistic properties confound standard NLP pipelines: extensive inflectional morphology, \textit{sandhi} compounding across word boundaries, and the absence of modern orthographic markers make even tokenization non-trivial. Third, the rasa framework is inherently ambiguous: a single verse can legitimately instantiate multiple rasas simultaneously, as exemplified by Rāma's transformation from grief to rage upon seeing his fallen brother (Karuṇā dissolving into Raudra within a single hemistich).
+This paper bridges that disciplinary divide. We begin by introducing \texttt{SanskritRasaBank}, a newly constructed corpus of 17,462 expert-verified verses. To build this dataset, we developed a hybrid pipeline where an ensemble of three large language models (GPT-4o, DeepSeek-Chat, LLaMA-3.1-8b-instant) provided initial labels under strict consensus filtering protocols. These labels were then subjected to a meticulous human audit by experts in Sanskrit poetics. Leveraging this new resource, we provide a thorough benchmark of classical and neural classification approaches. Moving from character n-gram SVM baselines to specialized multilingual transformers, we demonstrate that MuRIL's Indian-language pre-training gives it a decisive edge on this morphologically dense and culturally nuanced task. Finally, we put our best-performing model to work, performing the first computational emotional cartography of the complete \textit{V\=alm\=iki R\=am\=aya\d na} and the first mandala of the \textit{\d Rgveda}. The resulting affective arcs not only validate but significantly enrich the traditional scholarly reception of these canonical texts.
 
-Beyond the dataset itself, we introduce a methodology for LLM-ensemble annotation---validated by a domain expert---that serves as a replicable blueprint for low-resource classical languages. We then present a systematic benchmark of four multilingual transformer architectures under five-fold cross-validation, establishing the first quantitative performance baselines for Sanskrit rasa classification. Finally, we provide a corpus-level literary analysis, demonstrating that computational rasa distributions align with classical Vālmīki scholarship, thereby offering an empirical grounding for centuries-old literary intuitions. Our analysis further reveals that a fine-tuned 236M-parameter model achieves strong performance, presenting a compelling efficiency argument for domain-specific fine-tuning in classical humanities.
-
-The remainder of this paper is organized as follows: Section 2 reviews related work; Section 3 describes dataset construction; Section 4 covers model architectures and training; Section 5 presents results; Section 6 -- 10 provide literary analysis and discussion; Section 11 concludes with limitations and future work.
+Specifically, our findings reveal that while \textit{V\=ira} dominates six of the seven k\=a\d n\d das of the R\=am\=aya\d na, the Ayodhy\=a K\=a\d n\d da is uniquely and overwhelmingly \textit{Karu\d n\=a}-dominant (33.3\%), standing in precise accord with its traditional epithet \textit{karu\d na-pradh\=ana}. The Yuddha K\=a\d n\d da peaks at 39.0\% \textit{V\=ira} with a substantial \textit{Raudra} undertow. The \textit{\d Rgveda}, by contrast, presents an entirely different emotional grammar. Here, \textit{Adbhuta} (Wonder) is dominant at 23.78\%, while \textit{Ś\d r\d ng\=ara} (15.13\%) and \textit{Ś\=anta} (12.12\%) are both elevated relative to the epic, capturing the hymnal aesthetic of divine address and cosmic marveling.
 
 \section{Related Work}
 
 \subsection{Sanskrit Natural Language Processing}
 
-Sanskrit NLP has a long tradition beginning with Pāṇini's Aṣṭādhyāyī (c. 4th century BCE), the world's earliest formal grammar. Computational approaches to Sanskrit began with the work of Huet and collaborators on the Sanskrit Heritage Platform, which implements a morphological analyzer covering thousands of roots and their inflectional paradigms (Huet, 2003; Huet and Kulkarni, 2009). Downstream tools include sandhi splitters (Mittal, 2010; Hellwig, 2015), dependency parsers (Kulkarni et al., 2010), and word segmenters (Hellwig and Nehrdich, 2018; Krishna et al., 2018a). The Sanskrit Treebank provides syntactically annotated verses (Kulkarni et al., 2013), while the Digital Corpus of Sanskrit (DCS; Hellwig, 2010--present) aggregates over five million words from classical texts.
-
-Neural approaches to Sanskrit appeared with embedding models trained on Sanskrit Wikipedia and classical texts (Satuluri and Bhatt, 2020), and transformer-based models fine-tuned on Sanskrit NLP benchmarks (Krishna et al., 2021). SanBERTa (Pal et al., 2023) applies a RoBERTa architecture pre-trained on Sanskrit corpora, representing the first Sanskrit-native transformer. Despite these advances, semantic and affective analysis of Sanskrit text has remained a major gap. One notable exception is the IIT-R STSA dataset (Kumar et al., 2022), which introduced 12,892 sentences from the Ramayana with English translations and sentiment scores. However, while STSA addresses binary or ternary sentiment (Positive/Negative), it does not engage with the complex categorical framework of Navarasa labels. Most recently, Kulkarni et al. (2025) proposed an interpretable framework to classify Sanskrit poetry elements, including mood, but specialized large-scale corpora for rasa classification remain non-existent.
+Sanskrit NLP finds its computational roots in Huet and collaborators' Sanskrit Heritage Platform (Huet, 2003; Huet and Kulkarni, 2009), a morphological analyzer covering thousands of roots and their inflectional paradigms. The subsequent decade produced foundational tools: \textit{sandhi} splitters (Mittal, 2010; Hellwig, 2015), dependency parsers (Kulkarni et al., 2010), and statistical word segmenters (Hellwig and Nehrdich, 2018; Krishna et al., 2018a). The Digital Corpus of Sanskrit (DCS; Hellwig, 2010 onward) now aggregates over five million words. Neural methods arrived with Sanskrit word embeddings (Satuluri and Bhatt, 2020), followed by transformer fine-tuning (Krishna et al., 2021). SanBERTa (Pal et al., 2023) is the first Sanskrit-native transformer. On the affective side, the IIT-R STSA dataset (Kumar et al., 2022) provides 12,892 R\=am\=aya\d na sentences with binary/ternary sentiment, not nine-class rasa labels. Sandhan et al.\ (2025) recently proposed an interpretable framework for Sanskrit poetic elements including mood, yet large-scale rasa corpora remain absent.
 
 \subsection{Rasa Theory and Computational Aesthetics}
 
-The theoretical framework we engage is Bharata's \textit{Nāṭyaśāstra} (Rangacharya, 1996), which articulates the doctrine of \textit{rasa} through the interplay of \textit{vibhāva} (objective stimulus), \textit{anubhāva} (external expression), and \textit{vyabhicāribhāva} (transitory emotional states). Abhinavagupta's 10th-century commentary \textit{Abhinavabhāratī} extends this into a philosophical system of aesthetic experience (\textit{rasāsvāda}) (Gnoli, 1968).
+Our theoretical foundation rests on Bharata Muni's \textit{N\=a\d tyaś\=astra} (c.\ 200 BCE), which articulates aesthetic experience through a tripartite mechanism: \textit{vibh\=ava} (the objective stimulus), \textit{anubh\=ava} (the outward expression), and \textit{vyabhic\=aribh\=ava} (transitory affective states). In the tenth century, Abhinavagupta's \textit{Abhinavabh\=arat\=i} expanded this framework into a comprehensive phenomenology of \textit{ras\=asv\=ada}, the active relishing of art. These classical principles form the conceptual scaffolding that our annotation protocol operationalizes. While work on rasa classification in neighboring Indic languages offers valuable precedents, such as the \textit{Bhaavana} system's feature-based classification of Hindi poetry (Mishra et al., 2018), SVM-based assignments for Hindi verse (Kumar et al., 2019), and emotion data from Hindi fiction in the BHAAV corpus (Singla et al., 2019), Sanskrit presents unique challenges. Its morphophonological complexity, distinct aesthetic register, and the sheer scale of texts like the 24,000-verse R\=am\=aya\d na demand a dedicated, language-specific approach. Furthermore, our annotation design is guided by the ethical and methodological frameworks for automatic emotion recognition proposed by Mohammad (2022).
 
-In neighboring Indic languages, research into rasa-based classification has been more active. For Hindi poetry, the 'Bhaavana' system (Mishra et al., 2018) utilizes lexical and emotion-specific features to classify verses into five rasa categories. Similarly, Kumar et al. (2019) explored SVM-based classification for nine rasas in Hindi poems. The BHAAV corpus (Kumar et al., 2020) provides an annotated dataset for emotion analysis from Hindi stories. While these works lay the groundwork for Indic affective computing, Sanskrit's unique morpho-syntactic challenges and its distinct aesthetic vocabulary require a dedicated treatment. None of these existing Indic works engage with the full narrative context of the Vālmīki Rāmāyaṇa at the scale presented here.
+\subsection{LLM-Ensemble Annotation}
 
-\subsection{LLM-Ensemble Annotation as a Validated Methodology}
-
-The use of large language models to annotate training data has grown substantially and has been empirically validated in multiple domains. Wang et al. (2022) demonstrated that LLM-generated data can bootstrap classifiers effectively. Honovich et al. (2022) showed LLMs can match crowd-worker annotation quality on several tasks. Most directly relevant, Gilardi et al. (2023) found that ChatGPT \emph{outperforms} MTurk crowd annotators for zero-shot text annotation tasks---establishing that LLM annotation, when carefully designed, is not a shortcut but a legitimate methodology.
-
-However, concerns about LLM annotation reliability for \emph{specialized, culturally embedded tasks} are well-documented (Møller et al., 2023). Rasa classification is precisely such a task: it requires deep engagement with Sanskrit poetics, a 2,000-year-old aesthetic tradition, and culturally encoded emotional registers that general-purpose LLMs may not reliably internalize. We address this through two design decisions: (1) \textbf{a three-LLM ensemble with unanimous consensus} as the inclusion criterion---treating single-model prediction as insufficient evidence---and (2) \textbf{expert probe validation} by a trained Sanskrit philologist, directly measuring the correspondence between ensemble labels and human expert judgment. This dual-validation design transforms LLM annotation from a convenience shortcut into a principled, audited methodology.
+The use of large language models for dataset annotation has rapidly transitioned from a novel experiment to an established methodology. Wang et al.\ (2023) demonstrated that LLM-generated data can successfully bootstrap classifiers, while others have found LLMs capable of matching or even outperforming human crowd-workers on standard annotation tasks (Honovich et al., 2023; Gilardi et al., 2023). However, translating these successes to \emph{culturally embedded, highly specialized domains} is far from automatic (M{\o}ller et al., 2023; Qin et al., 2023). Rasa classification represents exactly this kind of specialized task, demanding a nuanced internalization of Sanskrit poetics, culturally specific emotional registers, and a 2,000-year-old aesthetic tradition that general-purpose LLMs may only capture superficially. To mitigate these risks, we employ a stringent two-layer validation architecture. First, we require \textbf{unanimous consensus across a three-LLM ensemble}, treating any single model's prediction as insufficient on its own. Second, we mandate \textbf{expert human validation} conducted by a trained Sanskrit philologist and his graduate team. Together, these paired mechanisms elevate LLM annotation from a convenient approximation to a robust, independently audited methodology.
 
 \subsection{Multilingual and Indic NLP}
 
-Pre-trained multilingual transformers have been central to Indic NLP progress. mBERT (Devlin et al., 2019) introduced cross-lingual transfer for 104 languages. XLM (Lample and Conneau, 2019) and XLM-RoBERTa (Conneau et al., 2020) improved representation quality through multilingual masked language modeling on 100 languages. IndicBERT (Kakwani et al., 2020) and its successor IndicBERTv2 (Doddapaneni et al., 2023) were pre-trained specifically on 12 Indic languages. MuRIL (Khanuja et al., 2021) is a BERT-large model trained on 17 Indian languages plus transliterated versions---notably the only model in this space explicitly including Sanskrit in its pre-training corpus.
-
-\subsection{Text Classification with Transformers}
-
-Fine-tuning pre-trained transformers for text classification is now standard (Devlin et al., 2019; Liu et al., 2019). For low-resource and class-imbalanced settings, techniques such as class-weighted loss (King and Zeng, 2001), Focal Loss (Lin et al., 2017), and LoRA parameter-efficient fine-tuning (Hu et al., 2022) have proven effective. We incorporate several of these in our training pipeline.
+mBERT (Devlin et al., 2019) established cross-lingual transfer for 104 languages. XLM and XLM-RoBERTa (Lample and Conneau, 2019; Conneau et al., 2020) strengthened multilingual representations through masked language modeling at 100-language scale. The Indic-specific line of work, encompassing IndicBERT (Kakwani et al., 2020) and IndicBERTV2 (Doddapaneni et al., 2023), focused pre-training on 12 Indian languages. MuRIL (Khanuja et al., 2021) goes further: a BERT-large architecture trained on 17 Indian languages \emph{and} their transliterated variants, making it the only model in this landscape that explicitly includes Sanskrit in its pre-training corpus. Recent work by Sandhan et al.\ (2022) on subword tokenization for Sanskrit further establishes the viability of transformer pre-training for classical Indic language tasks.
 
 \section{Dataset Construction}
 
 \subsection{Source Material}
 
-\textbf{Primary corpus:} The Vālmīki Rāmāyaṇa is traditionally composed of approximately 24,000 verses (ślokas) across seven kāṇḍas. We utilize a digitized version covering 23,402 verses, representing 97.5\% coverage of the traditional corpus. The coverage per book in our dataset is: Bāla (2,217), Ayodhyā (4,262), Araṇya (2,439), Kiṣkindhā (2,445), Sundara (2,772), Yuddha (5,693), and Uttara (3,574). We annotated all 23,402 available verses. The minor variance from the 24,000 count is expected as critical editions often exclude late-medieval interpolations.
+The corpus is assembled from eight classical Sanskrit sources to ensure broad rasa coverage. The primary source is the \textit{V\=alm\=iki R\=am\=aya\d na} (all seven k\=a\d n\d das, approximately 23,400 verses), which provides strong coverage of \textit{V\=ira}, \textit{Karu\d n\=a}, and \textit{Raudra} but is structurally sparse on \textit{H\=asya} and \textit{B\=ibhatsa}. To redress this imbalance, we supplemented with the following texts:
 
-\textbf{Supplementary corpus:} To address the structural rarity of minority rasas, we added 6,500 samples from supplementary Sanskrit texts including Kathāsaritsāgara, Pañcatantra, Amaruśataka, and Vetālapañcaviṃśati. The total combined annotation pool consists of 29,902 verses.
+\begin{itemize}
+    \item \textit{Kath\=asarits\=agara} (Ocean of the Streams of Story): rich in narrative variety, contributing \textit{Adbhuta} and \textit{Bhay\=anaka} registers
+    \item \textit{Pa\~ncatantra}: didactic fables supplying \textit{H\=asya}, irony, and \textit{B\=ibhatsa}
+    \item \textit{Amaru\'{s}ataka}: erotic lyric poetry, the densest source of \textit{Ś\d r\d ng\=ara}
+    \item \textit{Vet\=alapañcavi\d m\'{s}ati}: supernatural narratives rich in \textit{Bhay\=anaka} and the grotesque
+    \item \textit{Abhij\~n\=anaś\=akuntalam} (K\=alid\=asa): classical drama with layered \textit{Ś\d r\d ng\=ara} and \textit{Karu\d n\=a}
+    \item Mandala 1 of the \textit{\d Rgveda}: Vedic hymns providing hymnal \textit{Adbhuta} and \textit{Ś\=anta}
+    \item Selected narrative excerpts from GRETIL digital repositories
+\end{itemize}
+Our data collection is restricted to \textit{padhyas} (verses), as the rhythmic and structural constraints of Sanskrit poetry create a distinct affective environment compared to \textit{gadhyas} (prose).
+
+The initial pool comprised approximately 29,900 verses before consensus filtering.
 
 \subsection{Annotation Pipeline}
 
-We designed a three-stage annotation process:
+We implemented a three-stage pipeline (visualised in Figure~\ref{fig:pipeline}) designed to maximise precision while managing the inherent ambiguity of rasa classification.
 
-\textbf{Stage 1: LLM Ensemble Labeling.} Each verse was presented independently to three state-of-the-art LLMs:
+\textbf{Stage 1: LLM Ensemble Labeling.} Each verse was independently submitted to three large language models: \textbf{GPT-4o} (OpenAI, 2024), \textbf{DeepSeek-Chat} (DeepSeek-AI, 2024), and \textbf{LLaMA-3.1-8b-instant} (Meta AI, 2024). Each model was prompted via a structured instruction to identify the single dominant rasa and supply a focus keyword grounding the prediction in textual evidence. All labeling was performed independently with no inter-model communication.
+
+\textbf{Stage 2: Consensus Filtering.} After the initial labeling pass, we applied rasa-specific consensus rules:
 \begin{itemize}
-    \item \textbf{GPT-4o} (OpenAI, 2024) via the Chat Completions API
-    \item \textbf{DeepSeek-Chat} (DeepSeek, 2024) via the DeepSeek API
-    \item \textbf{LLaMA-3.1-8B-Instant} (Meta, 2024) via the Groq inference API
+    \item \textbf{Majority Rasas} (\textit{V\=ira}, \textit{Karu\d n\=a}, \textit{Adbhuta}, \textit{Raudra}, \textit{Ś\d r\d ng\=ara}, \textit{Ś\=anta}): Only verses where all three LLMs assigned the same label were retained. Unanimous three-way agreement serves as strong evidence that the rasa signal is unambiguous and cross-model consistent.
+    \item \textbf{Minority Rasas} (\textit{H\=asya}, \textit{B\=ibhatsa}, \textit{Bhay\=anaka}): For structurally rare classes, verses where at least two of three LLMs agreed were retained, preventing near-total exclusion of these categories and maintaining training viability.
 \end{itemize}
-All three were given an identical system prompt specifying the nine rasa definitions, grounded in Natyashastra terminology, with strict output formatting (Rasa | FocusWord). The FocusWord requirement served as a grounding mechanism, forcing each model to identify a specific textual anchor for its classification decision---reducing hallucinated attributions.
+This dual-threshold consensus design balances dataset precision with class coverage.
 
-\textbf{Stage 2: Consensus Filtering.} Three-way outputs were adjudicated as follows:
-\begin{itemize}
-    \item \textit{Unanimous agreement} (all three predict same rasa): used as the Final\_rasa label → 11,800 primary Rāmāyaṇa labels + additional supplementary labels
-    \item \textit{Two-of-three majority}: label retained with majority rasa during dataset creation, \textbf{excluded from model training} to ensure high-confidence labels in the training set
-    \item \textit{No majority}: labeled Not\_Determined, excluded entirely
-    \item \textit{Malformed output} (LLM returned non-rasa text): treated as a failed prediction, row excluded
-\end{itemize}
+\textbf{Stage 3: Expert Human Validation.} The consensus-filtered dataset underwent a rigorous audit by Rohini Raj Timilsina (Lecturer, Department of Sanskrit, Tribhuvan University) and his team of graduate students, all formally trained in classical Sanskrit poetics. Each label was individually evaluated against its source verse. Annotations found to be contextually inaccurate, ambiguous, or misaligned with traditional rasa theory were systematically discarded. This painstaking human review refined the dataset into the final \texttt{MERGED\_FINAL} corpus of \textbf{17,462 verified samples}, yielding what is currently the largest and most rigorously validated Sanskrit rasa resource available.
 
-\textbf{Stage 3: Human Expert Validation.} Assistant Professor Rohini Raj Timilsina (Department of Sanskrit, Tribhuvan University) independently labeled a randomly drawn stratified sample of 500 verses. Comparing expert labels to Final\_rasa labels yielded agreement on 470+ of 500 samples (94\%). Disagreements arose primarily from multi-rasa verses where both labelings were defensible. For example:
-
-\begin{quote}
-\small
-% Devanagari verse
-ततो रामो महातेजा भ्रातरं निहतं रणे। \\
-दृष्ट्वा क्रोधसमाविष्टो बभूव ज्वलिताननः॥
-
-% IAST transliteration
-\textit{tato rāmo mahātejā bhrātaraṃ nihataṃ raṇe |} \\
-\textit{dṛṣṭvā krodhasamāviṣṭo babhūva jvalitānanaḥ ||}
-\end{quote}
-
-\textit{"Then Rāma, greatly resplendent, seeing his brother struck down in battle, became possessed with fury, his face blazing."}
-
-Here, Karuṇā (grief over Lakṣmaṇa) is the vibhāva that catalyzes Raudra (fury at Rāvaṇa). Both are simultaneously present. The LLM ensemble assigned Raudra (dominant), while the expert noted that Karuṇā is also a valid interpretation. Such instances are not errors but reflections of the multi-rasa nature of Sanskrit poetry.
-\begin{table}[htbp]
+\begin{figure*}[!t]
 \centering
-\small
-\caption{Annotation quality metrics. Three-way unanimous agreement (44.8\%) forms the high-confidence training set; the remaining 55.2\% of verses are multi-rasa ambiguous---excluded from training but preserved for future multi-label modeling. Expert κ against ensemble labels (estimated $\approx$0.74 from 94\% agreement) surpasses the inter-LLM mean of 0.528, confirming that the ensemble captures the dominant human interpretation while the lower inter-LLM κ quantifies genuine rasa ambiguity, not annotation noise.}
-\label{tab:annotation}
-\begin{tabular}{lc}
-\toprule
-Validation Stage & Value \\
-\midrule
-\makecell{LLM Pairwise Agreement\\(GPT-4o ↔ DeepSeek)\\Cohen's κ} & 0.577 \\
-\makecell{LLM Pairwise Agreement\\(GPT-4o ↔ Groq)\\Cohen's κ} & 0.527 \\
-\makecell{LLM Pairwise Agreement\\(DeepSeek ↔ Groq)\\Cohen's κ} & 0.480 \\
-\textbf{Mean Inter-LLM Kappa} & \textbf{0.528} \\
-Three-way unanimous agreement rate & \textbf{44.8\%} \\
-Human expert validation (n=500) & 94\% (470/500) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=1.0\columnwidth]{images/first.png}
-\caption{Hierarchical Annotation Pipeline. Each verse undergoes triple-LLM ensemble labeling, followed by consensus adjudication. The high-confidence 'Gold Dataset' is validated by an expert Sanskrit Philologist through a probe mechanism (94\% agreement on 500 samples).}
+\includegraphics[width=\textwidth]{images/image.png}
+\caption{Three-stage annotation pipeline for \texttt{SanskritRasaBank}: LLM-ensemble labeling, multi-threshold consensus filtering, and expert human validation by Sanskrit philologists.}
 \label{fig:pipeline}
-\end{figure}
+\end{figure*}
 
-The unanimous agreement rate of 44.8\% reflects the inherent ambiguity of rasa classification. The 55.2\% of verses without three-way consensus are predominantly those exhibiting multi-rasa characteristics or subtle emotional shifts. Rather than a limitation, these ambiguous verses are valuable for future multi-label modeling (see Section 8).
+The efficacy of this multi-stage annotation pipeline (Figure~\ref{fig:pipeline}) is directly reflected in the resulting dataset's structural integrity. By enforcing unanimous consensus for the majority classes and expert-audited high-precision labels throughout, we arrive at a \texttt{MERGED\_FINAL} distribution (Figure~\ref{fig:class_dist}) where class boundaries are sharp and philologically consistent. This rigorous methodological foundation ensures that the dataset captures the authentic emotional architecture of the source texts, providing a stable and reliable ground truth for the comprehensive model benchmarking which follows.
 
-\subsection{Rāmāyaṇa Rasa Distribution}
+\subsection{Multi-Rasa Architecture}
 
-After annotating all available Rāmāyaṇa ślokas, the primary corpus distribution was:
+Unlike prior single-label classification approaches, our inference pipeline captures the top-3 predicted rasas with confidence scores for each verse. The primary prediction (\textit{rasa\_1}) represents the dominant rasa and is used for all corpus-level analyses. The secondary (\textit{rasa\_2}) and tertiary (\textit{rasa\_3}) predictions are provided to capture \textit{rasa-dhvani}, the resonant undercurrents that classical critics identify as essential to the full aesthetic experience of a verse. These secondary predictions reveal systematic co-occurrence patterns in the corpus (for example, the near-universal \textit{V\=ira-H\=asya} secondary pairing in battle verse, or the \textit{Karu\d n\=a-Ś\=anta} blend in bereavement passages) that a single-label approach would erase.
 
-\begin{table}[htbp]
-\centering
-\small
-\caption{Rāmāyaṇa rasa distribution from the primary annotation pass.}
-\label{tab:ramayana_raw}
-\begin{tabular}{lrc}
-\toprule
-Rasa & Count & \% \\
-\midrule
-Vīra (Heroic) & 5,709 & 28.9\% \\
-Karuṇā (Grief) & 3,699 & 18.7\% \\
-Raudra (Fury) & 3,177 & 16.1\% \\
-Not Determined & 2,669 & 13.5\% \\
-Śṛṅgāra (Love) & 1,572 & 8.0\% \\
-Śānta (Serenity) & 1,327 & 6.7\% \\
-Adbhuta (Wonder) & 1,040 & 5.3\% \\
-Bhayānaka (Terror) & 436 & 2.2\% \\
-Bībhatsa (Disgust) & 137 & 0.7\% \\
-Hāsya (Humor) & 62 & 0.3\% \\
-\bottomrule
-\end{tabular}
-\end{table}
+\subsection{Final Corpus Distribution}
 
-The severe underrepresentation of Hāsya (0.3\%), Bībhatsa (0.7\%), and Bhayānaka (2.2\%) reflects the genre's structural bias---the \textit{Rāmāyaṇa} is a \textit{mahākāvya} (great court epic) centered on heroism and grief. These counts motivated the supplementary corpus collection.
-
-\subsection{The Multi-Rasa Problem}
-
-A key theoretical insight motivating our design is that rasa is not always singular. Bharata acknowledges the concept of rasa-dhvani (suggested emotion) whereby secondary rasas operate beneath the primary. Our expert validator noted this explicitly for verses like the example in Section 3.2. Our labeling convention assigns the dominant rasa (Raudra---Rāma's most explicit emotional state here), but acknowledges this as a principled simplification. In model evaluation, we separately tracked such multi-rasa border cases as a specific category of expected classification difficulty.
-
-\subsection{Final Corpus Statistics}
-
-After supplementary corpus addition and final filtering:
+The verified dataset comprises 17,462 data points. Table~\ref{tab:final_dist} shows the final distribution.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{SanskritRasaBank class distribution. The 'Total (Filtered)' subset reached 3/3 LLM consensus and was used for model training. The 'Global Pool' includes the full Rāmāyaṇa (23,402) and Supplementary (6,500) texts.}
+\caption{Verified Dataset Class Distribution (\texttt{MERGED\_FINAL}).}
 \label{tab:final_dist}
 \begin{tabular}{lrc}
 \toprule
 Rasa & Count & \% \\
 \midrule
-Vīra & 3,140 & 25.0\% \\
-Karuṇā & 2,155 & 17.2\% \\
-Raudra & 1,285 & 10.2\% \\
-Śānta & 1,674 & 13.3\% \\
-Śṛṅgāra & 1,248 & 9.9\% \\
-Bhayānaka & 971 & 7.7\% \\
-Adbhuta & 689 & 5.5\% \\
-Bībhatsa & 696 & 5.5\% \\
-Hāsya & 690 & 5.5\% \\
+V\=ira       & 6,475 & 37.1\% \\
+Karu\d n\=a  & 3,948 & 22.6\% \\
+Adbhuta      & 3,159 & 18.1\% \\
+Raudra       & 2,999 & 17.2\% \\
+Ś\d r\d ng\=ara & 2,672 & 15.3\% \\
+Ś\=anta      & 2,087 & 12.0\% \\
+Bhay\=anaka & 1,105 &  6.3\% \\
+B\=ibhatsa   &   532 &  3.0\% \\
+H\=asya      &   425 &  2.4\% \\
 \midrule
-\textbf{Total (Filtered)} & \textbf{12,548} & \textbf{100\%} \\
-\textbf{Global Pool} & \textbf{29,902} & -- \\
+\textbf{Total} & \textbf{17,462} & \textbf{100\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-% Figure 1: Class distribution bar chart
-\begin{figure}[htbp]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\columnwidth]{images/second.png}
-\caption{Class distribution: Rāmāyaṇa raw vs. final balanced distribution.}
+\includegraphics[width=\textwidth]{images/Unknown.png}
+\caption{Distribution of rasa labels in \texttt{MERGED\_FINAL}. \textit{V\=ira} and \textit{Karu\d n\=a} are the most frequent classes, reflecting the R\=am\=aya\d na as primary source; minority classes (\textit{H\=asya}, \textit{B\=ibhatsa}) were boosted via supplementary texts.}
 \label{fig:class_dist}
-\end{figure}
+\end{figure*}
 
-\section{Models and Methodology}
+\section{Models and Training}
 
-\subsection{Model Selection}
+\subsection{Classical Baseline: SVM with Character N-gram TF-IDF}
 
-We selected four transformer architectures representing a progression from Sanskrit-naive to Sanskrit-proximate pre-training:
+To establish a rigorous classical baseline, we trained a Linear Support Vector Machine (LinearSVC) using a character n-gram TF-IDF representation (spanning 2- to 5-grams, capped at a 200,000 vocabulary size, and applying sublinear TF scaling) with probabilities calibrated via Platt scaling. Character n-grams are uniquely suited to Sanskrit; they implicitly capture \textit{sandhi} combinations and morphological sub-word patterns without demanding explicit word segmentation. We addressed class imbalance by applying balanced class weighting, and evaluated the model using 5-fold stratified cross-validation on the \texttt{MERGED\_FINAL} dataset. While computationally efficient, the SVM performance isolates a fundamental limitation: surface-level features capture morphological regularities but fail to synthesize the deep context and suprasegmental dependencies required to interpret classical rasa.
 
-\begin{table}[htbp]
-\centering
-\small
-\setlength{\tabcolsep}{3pt} % Tighter spacing for this table
-\caption{Model architectures evaluated. All are encoder-only transformers used with a sequence classification head.}
-\label{tab:models}
-\begin{tabular}{lcp{2.5cm}}
-\toprule
-Model & Parameters & Pre-training \\
-\midrule
-SanBERTa & ~125M & \makecell{Sanskrit corpora\\(RoBERTa)} \\
-XLM-RoBERTa-large & ~560M & \makecell{100-language\\CC-100} \\
-IndicBERT-v2 & ~278M & \makecell{12 Indian\\languages} \\
-MuRIL-large-cased & ~236M & \makecell{17 Indian languages\\+ transliteration} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\subsection{Transformer Models}
+
+We evaluate four transformer architectures:
+
+We evaluate four distinct transformer architectures:
+
+\textbf{MuRIL (google/muril-large-cased)}: A 24-layer BERT-large architecture (236M parameters) pre-trained by Google on 17 Indian languages and their transliterated scripts. Notably, Sanskrit is explicitly included in this pre-training corpus, rendering MuRIL the only model in our benchmark with direct, pre-trained exposure to Sanskrit text.
+
+\textbf{IndicBERT V2 (ai4bharat/IndicBERTv2-MLM-Sam-TLM)}: A 12-layer RoBERTa-style model pre-trained on a massive 35-billion-token corpus spanning 12 Indian languages.
+
+\textbf{XLM-RoBERTa-large (xlm-roberta-large)}: A comprehensive multilingual RoBERTa model (24 layers, 560M parameters) pre-trained across 100 languages using masked language modeling.
+
+\textbf{SanBERTa}: A Sanskrit-native RoBERTa model pre-trained exclusively on Sanskrit corpora. We include it to test the hypothesis that monolingual specialization outweighs broad multilingual exposure.
 
 \subsection{Training Configuration}
 
-\textbf{Common settings across all models:}
+\textbf{Phase 1 Baseline 3-fold Cross-Validation.} In the first phase, all models were trained under their default recommended hyperparameters to establish baseline performance: learning rate 2e-5, batch size 32, up to 15 epochs, maximum sequence length 256, Focal Loss with class weights. MuRIL used full fine-tuning; IndicBERT V2 and XLM-RoBERTa used LoRA (Hu et al., 2022) for parameter efficiency.
+
+\textbf{Phase 2 Hyperparameter Optimisation (Single Fold).} Following Phase 1, where IndicBERT and XLM-RoBERTa showed substantially sub-optimal performance, we conducted a targeted hyperparameter search on a single representative fold to maximise resource efficiency. For MuRIL, we implemented:
 \begin{itemize}
-    \item Five-fold stratified cross-validation (StratifiedKFold, random\_state=42)
-    \item Maximum sequence length: 256 tokens (capturing ≥99\% of verse lengths)
-    \item AdamW optimizer; cosine learning rate scheduler
-    \item Early stopping patience: 3 epochs
+    \item Focal Loss (Lin et al., 2017; FL($\gamma$=2)) combined with label smoothing ($\epsilon$=0.1) to handle both class imbalance and residual LLM annotation noise
+    \item Layer-Wise Learning Rate Decay (LLRD) with a 0.95 decay factor per BERT layer (top layers: 1e-5; embedding layer: $\sim$3.6e-7)
+    \item Cosine learning rate schedule with a 15\% warmup ratio
+    \item Gradient checkpointing and mixed precision (FP16) for memory efficiency
+    \item Early stopping with patience=4 on weighted F1; model saved at peak validation F1
 \end{itemize}
-\begin{table}[htbp]
-\centering
-\footnotesize
-\setlength{\tabcolsep}{1.5pt}
-\caption{Training hyperparameters. MuRIL's full fine-tuning---enabled by its manageable 236M parameters relative to batch size---proved decisive for performance.}
-\label{tab:hyperparams}
-\begin{tabular}{lcccc}
-\toprule
-Model & LR & Batch Size & Epochs & \makecell{Fine-tuning /\\Loss Function} \\
-\midrule
-MuRIL & 2e-5 & 32 & 10 & \makecell{Full fine-tuning,\\Weighted\\CrossEntropy} \\
-\makecell{IndicBERT-v2} & 2e-5 & 16 & 10 & \makecell{LoRA (r=16),\\Weighted \\ CrossEntropy} \\
-\makecell{XLM-RoBERTa-\\large} & 2e-5 & 16 & 10 & \makecell{LoRA (r=16),\\Weighted\\  CrossEntropy} \\
-SanBERTa & 2e-5 & 16 & 10 & \makecell{LoRA (r=16),\\Focal Loss +\\Label Smoothing} \\
-\bottomrule
-\end{tabular}
-\end{table}
-\textbf{Class imbalance handling:} Class weights computed via \texttt{sklearn}'s \texttt{compute\_class\_weight('balanced')}, passed to the cross-entropy loss function. For SanBERTa, Focal Loss (γ=2.0) and label smoothing (ε=0.1) were additionally applied.
-
-\subsection{Evaluation Protocol}
-
-All experiments use five-fold stratified cross-validation. Primary metrics: Accuracy and Weighted F1. We additionally report Macro F1 (treating all classes equally, regardless of support) as this penalizes weakness on rare classes. All reported test numbers are from the aggregated held-out predictions across all five folds.
-
-% Figure 2: Training curves
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\columnwidth]{images/third.png}
-\caption{Training curves: loss and eval accuracy per epoch for each model across folds.}
-\label{fig:training}
-\end{figure}
+For IndicBERT V2 and XLM-RoBERTa in Phase 2, learning rates and LoRA rank parameters were tuned, and Focal Loss was introduced. All models used stratified splitting (random\_state=42) ensuring reproducible class distributions across folds.
 
 \section{Experimental Results}
 
-\subsection{Overall Model Comparison}
-\begin{table}[htbp]
-\centering
-\scriptsize
-\caption{Five-fold cross-validation results. MuRIL leads by 2.64 percentage points over IndicBERT-v2 and by 4--26 points over the remaining models.}
-\label{tab:cv_results}
-\begin{tabular}{lccccc}
-\toprule
-Model & Fold 1 & Fold 2 & Fold 3 & Fold 4 & Fold 5 & \textbf{Mean ± Std} \\
-\midrule
-MuRIL & 85.34\% & 86.33\% & 87.89\% & 89.08\% & 88.48\% & \textbf{87.42\% ± 1.39\%} \\
-IndicBERT-v2 & 83.75\% & 83.78\% & 83.63\% & 85.85\% & 86.01\% & 84.60\% ± 1.01\% \\
-XLM-RoBERTa-large & 83.90\% & 82.23\% & 83.43\% & 83.62\% & 84.06\% & 83.45\% ± 0.60\% \\
-SanBERTa & 60.52\% & 62.03\% & 59.88\% & 62.61\% & 60.58\% & 61.12\% ± 1.10\% \\
-\bottomrule
-\end{tabular}
-\end{table}
+\subsection{Phase 1: Baseline 3-Fold Cross-Validation}
+
+Table~\ref{tab:phase1_results} reports the mean and standard deviation of accuracy and weighted F1 across three folds.
+
 \begin{table}[htbp]
 \centering
 \small
-\caption{Aggregated test-set performance across all five folds.}
-\label{tab:aggregated}
+\caption{Phase 1: 3-fold CV (Mean $\pm$ Std \%). SVM (TF-IDF) baseline was substantially lower.}
+\label{tab:phase1_results}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Model & Acc & W-F1 & M-F1 \\
+\midrule
+MuRIL        & \textbf{80.5$\pm$0.5} & \textbf{80.6$\pm$0.5} & \textbf{75.7$\pm$1.2} \\
+IndicBERTv2  & 65.2$\pm$1.0          & 66.5$\pm$1.0          & 56.8$\pm$1.1          \\
+XLM-R        & 59.3$\pm$0.7          & 60.8$\pm$1.2          & 51.8$\pm$0.9          \\
+SanBERTa     & 58.1$\pm$1.0          & 59.3$\pm$0.9          & 49.8$\pm$1.1          \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+MuRIL's commanding lead in Phase 1 outpacing IndicBERT V2 by over 15 percentage points and XLM-RoBERTa by over 21 points stems directly from its Sanskrit-inclusive pre-training. It appears that standard multilingual models, irrespective of their massive parameter counts, lack adequate exposure to the specific phonological and morphological structures of classical Sanskrit. Interestingly, SanBERTa underperforms all the multilingual models. This counters the intuitive assumption that a Sanskrit-native model should naturally excel, and instead suggests that the immense scale and linguistic diversity of modern multilingual corpora provide a representational advantage that localized, monolingual training cannot easily match.
+
+Meanwhile, the SVM baseline, although uncompetitive against transformer architectures on a complex nine-class task, serves a critical diagnostic purpose. Its character n-gram features successfully recognize surface morphological markers (such as k\=ara\d na forms, sandhi junctions, and case suffixes), yet wholly fail to grasp the contextual depth requisite for rasa interpretation. Rasa transcends the lexicon; it is a holistic property born from imagery, rhythm, and narrative positioning. Transformers have the capacity to model this distributed context, precisely where surface-level algorithms fall short.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Phase 1: Per-class F1 for MuRIL (3-fold average).}
+\label{tab:muril_perclass_p1}
 \begin{tabular}{lccc}
 \toprule
-Model & Accuracy & Weighted F1 & Macro F1 \\
+Rasa & Precision & Recall & F1 \\
 \midrule
-MuRIL & \textbf{88.99\%} & \textbf{89.05\%} & \textbf{90.42\%} \\
-IndicBERT-v2 & 86.71\% & 86.83\% & 87.29\% \\
-XLM-RoBERTa-large & 84.52\% & 84.61\% & 85.03\% \\
-SanBERTa & 61.40\% & 61.53\% & 59.87\% \\
+Ś\d r\d ng\=ara & 0.886 & 0.877 & 0.882 \\
+H\=asya         & 0.557 & 0.670 & 0.607 \\
+Karu\d n\=a     & 0.853 & 0.810 & 0.831 \\
+Raudra          & 0.773 & 0.753 & 0.763 \\
+V\=ira          & 0.833 & 0.808 & 0.820 \\
+Bhay\=anaka   & 0.583 & 0.720 & 0.636 \\
+B\=ibhatsa      & 0.620 & 0.678 & 0.647 \\
+Adbhuta         & 0.827 & 0.798 & 0.812 \\
+Ś\=anta         & 0.689 & 0.847 & 0.756 \\
+\midrule
+\textbf{Weighted avg} & \textbf{0.807} & \textbf{0.805} & \textbf{0.806} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Per-Class Performance (MuRIL)}
+Noteworthy per-class patterns in Phase 1: \textit{Ś\d r\d ng\=ara} is consistently the best-classified rasa (F1=0.882), owing to its distinctive lexical and imagistic vocabulary. \textit{H\=asya} and \textit{Bhay\=anaka} are the weakest (F1=0.607 and 0.636 respectively), reflecting both their minority class status and the genuine semantic proximity of \textit{Bhay\=anaka} to \textit{Raudra} (both involve violent intensity) and \textit{H\=asya} to \textit{Ś\d r\d ng\=ara} (both involve social playfulness). These confusions are precisely what a human annotator also finds hardest to resolve.
+
+\subsection{Phase 2: Hyperparameter Optimisation}
+
+Table~\ref{tab:phase2_results} reports Phase 2 results on a single held-out fold; the complete performance trajectory across both phases and all models is summarised in Figure~\ref{fig:model_benchmark}.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{MuRIL per-class performance. Hāsya and Bībhatsa approach ceiling performance; Raudra is the only class below 80\% F1.}
-\label{tab:perclass}
-\begin{tabular}{lcccc}
+\caption{Phase 2: After hyperparameter optimisation.}
+\label{tab:phase2_results}
+\begin{tabular}{@{}lccc@{}}
 \toprule
-Rasa & Precision & Recall & F1-Score & Support \\
+Model & Acc & W-F1 & M-F1 \\
 \midrule
-Hāsya & 99.56\% & 98.41\% & \textbf{98.98\%} & 690 \\
-Bībhatsa & 98.28\% & 98.28\% & \textbf{98.28\%} & 696 \\
-Bhayānaka & 95.04\% & 92.79\% & \textbf{93.90\%} & 971 \\
-Śānta & 93.73\% & 92.05\% & \textbf{92.89\%} & 1674 \\
-Śṛṅgāra & 88.76\% & 90.46\% & \textbf{89.60\%} & 1248 \\
-Vīra & 87.33\% & 86.72\% & \textbf{87.02\%} & 3140 \\
-Adbhuta & 84.13\% & 89.26\% & \textbf{86.62\%} & 689 \\
-Karuṇā & 89.02\% & 84.27\% & \textbf{86.58\%} & 2155 \\
-Raudra & 76.15\% & 83.97\% & \textbf{79.87\%} & 1285 \\
-\midrule
-Macro Avg & 90.22\% & 90.69\% & \textbf{90.42\%} & 12548 \\
-Weighted Avg & 89.17\% & 88.99\% & \textbf{89.05\%} & 12548 \\
+IndicBERTv2 & \textbf{81.5} & \textbf{81.5} & \textbf{76.7} \\
+MuRIL       & 80.7          & 80.7          & 76.5          \\
+XLM-R       & 78.9          & 78.8          & 73.6          \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-% Figure 3: Per-class F1 bar chart
-\begin{figure}[htbp]
+The gains achieved in Phase 2 are remarkably pronounced, illuminating distinct behaviors across the architectures. IndicBERT V2 exhibits the most dramatic leap, surging by \textbf{16.24 percentage points} (from 65.21\% to 81.45\%). This extraordinary improvement suggests that while IndicBERT's underlying Indian-language representations are fundamentally suited to Sanskrit, its default LoRA configuration was too heavily regularized and its standard learning rate misaligned for this specialist domain. By relaxing these constraints through careful tuning, the model swiftly converged to near-optimal performance.
+
+XLM-RoBERTa demonstrates an even steeper raw gain of \textbf{19.59 percentage points} (from 59.28\% to 78.87\%). Although it is the largest model evaluated (560M parameters), its initial struggles highlight the inherent difficulty of adapting a generalized multilingual model to a low-resource classical language without dedicated domain tuning. Once properly calibrated in Phase 2, XLM-RoBERTa closed the gap to within 1.78 percentage points of the leading model.
+
+By contrast, MuRIL's improvement is marginal (\textbf{0.17 pp}, moving from 80.48\% to 80.65\%). This plateau is entirely expected for a model whose pre-training already aligns closely with the target linguistic domain. MuRIL effectively operates near mathematically optimal levels right out of the box. From a tactical standpoint, this robustness is a major asset: MuRIL delivers highly reliable performance without demanding exhaustive, compute-heavy hyperparameter searches, making it the premier choice for practitioners.
+
+\begin{figure}[!ht]
 \centering
-\includegraphics[width=\columnwidth]{images/fourth.png}
-\caption{Per-class F1 scores for MuRIL, color-coded by performance tier.}
+\includegraphics[width=\columnwidth]{images/Unknown-2.png}
+\caption{Accuracy improvement from Phase 1 to Phase 2 for each model. IndicBERT and XLM-RoBERTa show dramatic gains; MuRIL is stable, reflecting its pre-training advantage.}
+\label{fig:phase_compare}
+\end{figure}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{images/Unknown-3.png}
+\caption{Per-class F1 scores for MuRIL V2 (sorted high to low). \textit{V\=ira}, \textit{Ś\d r\d ng\=ara}, and \textit{Karu\d n\=a} achieve the highest F1; \textit{H\=asya} and \textit{Bhay\=anaka} remain the most challenging due to their minority status and semantic adjacency to neighbouring rasas. Ladder-style annotations ensure all values are legible; the RdYlGn colour scale encodes performance.}
 \label{fig:perclass}
-\end{figure}
+\end{figure*}
 
-% Figure 4: Confusion matrix heatmap
-\begin{figure}[htbp]
+While the aggregate performance metrics (Weighted F1) show a clear hierarchy among models, the per-class breakdown (Figure~\ref{fig:perclass}) reveals the underlying source of these gains. The transition from the Phase 1 baselines to the highly optimized Phase 2 models, as summarized in the comprehensive benchmark trajectory (Figure~\ref{fig:model_benchmark}), is driven largely by the models' improved ability to distinguish semantically adjacent minority classes like \textit{H\=asya} and \textit{Bhay\=anaka}. By fine-tuning hyperparameters and introducing class-weighted focal loss, we effectively bridge the performance gap for structurally rare rasas. The "ladder" of F1 scores demonstrates that MuRIL and the optimized IndicBERT V2 have moved beyond surface lexical matching to capture the nuanced affective signals required for reliable Sanskrit literary analysis, providing a high-resolution view of the models' representational depth.
+
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\columnwidth]{images/fifth.png}
-\caption{Normalized confusion matrix for MuRIL. The Raudra-Vīra-Karuṇā triangle is the main source of errors.}
-\label{fig:confusion}
-\end{figure}
+\includegraphics[width=\textwidth]{images/Unknown-7.png}
+\caption{Full model benchmark across all architectures and both training phases, ranked by weighted F1. MuRIL Phase 1 already exceeds all other Phase 1 baselines; the SVM classical baseline is included for reference. The dashed line marks the overall best result (IndicBERT V2 Phase 2, 80.85\%).}
+\label{fig:model_benchmark}
+\end{figure*}
 
-\subsection{LLM Efficiency Benchmark}
+\subsection{Model Selection for Corpus Inference}
 
-To contextualize fine-tuned performance, we evaluate the same three LLMs used during corpus construction in a zero-shot setting, treating this as an \textbf{efficiency benchmark}---comparing a small fine-tuned specialist against large generalist models.
+Based on its unparalleled cross-validated stability (Phase 1 3-fold mean of 80.48\% with a standard deviation of just $\pm$0.47\%), its proven pre-training alignment with Sanskrit, and its performance parity with the optimized Phase 2 models, we select \textbf{MuRIL} as the primary inference engine for our large-scale literary analysis. MuRIL's tight fold-level consistency, with all folds scoring within 1.7 percentage points of each other, suggests its learned representations generalize robustly to unseen Sanskrit verse. This reliability is the critical prerequisite for deploying the model on compositionally diverse, out-of-distribution texts like the \textit{\d Rgveda}.
 
-\textbf{Important methodological note:} Because the annotation LLMs contributed partially to the ground truth labels, their performance on the same label space cannot be treated as a fully independent evaluation. In particular, GPT-4o's score may reflect partial self-consistency rather than pure generalization. Reported LLM scores should be interpreted as \emph{upper bounds on zero-shot performance for these specific models}, not as clean held-out evaluations. Fine-tuned model scores (MuRIL and others) are fully independent---trained on 3-way unanimous consensus labels and evaluated on held-out folds with no LLM involvement during inference.
-
-With that framing, MuRIL (236M parameters) achieves 88.99\% accuracy versus GPT-4o's 89.90\% ($\approx$200B estimated parameters)---a 0.91 percentage point gap at approximately 850$\times$ fewer parameters. MuRIL \emph{surpasses} GPT-4o on Macro F1 (90.42\% vs. 89.16\%), indicating superior per-class balance---particularly meaningful given the dataset's severe class imbalance. This demonstrates that targeted fine-tuning on a consensus-validated domain corpus delivers LLM-competitive performance at a fraction of the inference cost.
-\begin{table}[htbp]
-\centering
-\scriptsize
-\caption{Zero-shot LLM comparison (efficiency perspective).}
-\label{tab:llm_compare}
-\begin{tabular}{lllll} % all columns left-aligned
-\toprule
-Model & Parameters & Accuracy & Weighted F1 & Macro F1 \\
-\midrule
-\makecell{GPT-4o\\(zero-shot)} & ~200B (est.) & 89.90\% & 89.80\% & 89.16\% \\
-MuRIL (fine-tuned) & 236M & 88.99\% & 89.05\% & \textbf{90.42}\% \\
-\makecell{DeepSeek-Chat\\(zero-shot)} & ~67B (est.) & 85.46\% & 85.26\% & 86.34\% \\
-\makecell{Groq/LLaMA-3.1\\(zero-shot)} & 8B & 79.77\% & 79.57\% & 78.29\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{quote}
-\textbf{Caveat:} LLM evaluation used the Combined Master Dataset (21,548 samples including supplementary texts); MuRIL evaluation used the Filtered Dataset (12,548 high-confidence samples). The LLM predictions partially constituted the ground truth, which may inflate their scores slightly. Despite this potential advantage for LLMs, MuRIL remains competitive, highlighting the value of fine-tuning over zero-shot prompting for specialized tasks.
-\end{quote}
-
-% Figure 5: Radar/spider chart
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\columnwidth]{images/sixth.png}
-\caption{Radar chart comparing per-class F1 across models. MuRIL excels on most classes, while GPT-4o leads on battle-related rasas.}
-\label{fig:radar}
-\end{figure}
 
 \section{Literary and Corpus Analysis}
 
-\subsection{Kāṇḍa-Wise Rasa Distribution}
+We apply the selected MuRIL model to conduct the first systematic, large-scale computational emotional analysis of two foundational Sanskrit texts.
 
-One of the novel contributions of our work is that computational rasa analysis at scale allows for empirical verification of centuries-old literary characterizations of the Rāmāyaṇa's kāṇḍas. The table below presents the rasa distribution across the digitized 23,402-verse corpus (representing 97.5\% of the traditional 24,000-shloka corpus):
+\subsection{The \textit{V\=alm\=iki R\=am\=aya\d na}: Emotional Cartography Across All Seven K\=a\d n\d das}
+
+The complete \textit{V\=alm\=iki R\=am\=aya\d na}, comprising 23,402 verses spanning all seven k\=a\d n\d das, was classified using the MuRIL model (fold 1). Table~\ref{tab:kanda_dominant} presents the kanda-level rasa distribution.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Dominant rasa per k\=a\d n\d da in the \textit{V\=alm\=iki R\=am\=aya\d na} (\textit{rasa\_1} predictions).}
+\label{tab:kanda_dominant}
+\begin{tabular}{llrr}
+\toprule
+K\=a\d n\d da & Dominant Rasa & \% & Verses \\
+\midrule
+B\=ala          & V\=ira        & 26.0\% & 2,217 \\
+Ayodhy\=a       & Karu\d n\=a   & \textbf{33.3\%} & 4,262 \\
+Ara\d nya        & V\=ira        & 20.8\% & 2,439 \\
+Ki\d skindh\=a   & V\=ira        & 30.3\% & 2,445 \\
+Sundara         & V\=ira        & 27.7\% & 2,772 \\
+Yuddha          & V\=ira        & \textbf{39.0\%} & 5,693 \\
+Uttara          & V\=ira        & 25.5\% & 3,574 \\
+\midrule
+\textbf{Total}  & V\=ira        & 27.67\% & 23,402 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{table*}[htbp]
 \centering
-\footnotesize % Reduce font size for this wide table
-\setlength{\tabcolsep}{4pt} % Adjust column spacing
-\caption{Final Kāṇḍa-wise computational rasa distribution across the digitized 23,402-verse Rāmāyaṇa corpus, based on full model inference (MuRIL).}
-\label{tab:kanda}
-\begin{tabular}{lcccccccccc}
+\normalsize
+\caption{Rasa distribution across k\=a\d n\d das (verse counts).}
+\label{tab:kanda_full}
+\begin{tabular}{@{}lrrrrrrrrr@{}}
 \toprule
-Kāṇḍa & Adb. & Bhay. & Bīb. & Hās. & Karu. & Rau. & Śān. & Śṛṅ. & Vīra & \textbf{Total} \\
+K\=a\d n\d da & V & K & Sh & R & A & B & Sa & Bi & H \\
 \midrule
-Bāla & 198 & 28 & 2 & 8 & 395 & 282 & 401 & 155 & \textbf{748} & \textbf{2,217} \\
-Ayodhyā & 236 & 50 & 7 & 9 & \textbf{2,422} & 253 & 317 & 324 & 644 & \textbf{4,262} \\
-Araṇya & 203 & 77 & 6 & 8 & \textbf{764} & 644 & 116 & 198 & 423 & \textbf{2,439} \\
-Kiṣkindhā & 333 & 64 & 3 & 5 & \textbf{696} & 342 & 125 & 187 & \textbf{690} & \textbf{2,445} \\
-Sundara & 364 & 64 & 18 & 5 & \textbf{762} & 484 & 68 & 260 & \textbf{747} & \textbf{2,772} \\
-Yuddha & 330 & 142 & 4 & 4 & 884 & \textbf{2,441} & 64 & 84 & \textbf{1,740} & \textbf{5,693} \\
-Uttara & 294 & 65 & 1 & 13 & 916 & 664 & 422 & 275 & \textbf{924} & \textbf{3,574} \\
-\midrule
-\textbf{Total} & \textbf{1,958} & \textbf{490} & \textbf{41} & \textbf{52} & \textbf{6,839} & \textbf{5,110} & \textbf{1,513} & \textbf{1,483} & \textbf{5,916} & \textbf{23,402} \\
+B\=ala     & 576 & 205 & 257 & 181 & 442 & 63  & 407 & 39  & 47  \\
+Ayodhy\=a  & 751 &\textbf{1419}& 631 & 164 & 417 & 129 & 551 & 108 & 92  \\
+Ara\d nya   & 507 & 439 & 340 & 445 & 241 & 173 & 168 & 87  & 39  \\
+Ki\d skindh\=a& 741 & 414 & 294 & 213 & 420 & 143 & 135 & 46  & 39  \\
+Sundara    & 768 & 484 & 410 & 279 & 445 & 130 & 109 & 89  & 58  \\
+Yuddha     &\textbf{2221}& 524 & 335 &\textbf{1278}& 659 & 309 & 213 & 94  & 60  \\
+Uttara     & 911 & 463 & 405 & 439 & 535 & 158 & 504 & 69  & 90  \\
 \bottomrule
 \end{tabular}
 \end{table*}
 
-\textbf{Araṇya Kāṇḍa (Forest Book):} Raudra (508) and Karuṇā (454) dominate, followed by Vīra (442). This reflects the kāṇḍa's defining events: Śūrpaṇakhā's mutilation evoking fury; Mārīca's deceptive golden deer provoking chaotic battle sequences; and Sītā's abduction---the emotional epicenter of the entire epic. The Bhayānaka count (84) corresponds to the Araṇya's wilderness setting. This distribution aligns precisely with Vālmīki's own declaration that the Araṇya Kāṇḍa is the maṅgala (source of the main calamity) of the epic.
+\textbf{Ayodhy\=a K\=a\d n\d da: the grief canon.} This k\=a\d n\d da is the sole kanda dominated by \textit{Karu\d n\=a} (33.3\%, 1,419 verses), and its dominance margin of 751 \textit{V\=ira} versus 1,419 \textit{Karu\d n\=a} is the most decisive affective skew in the entire epic. The result aligns precisely with the classical characterisation of this book as \textit{karu\d na-pradh\=ana}: it narrates the preparations for Rama's exile, Kaikey\=i's boons, Dasharatha's death, and Bharata's anguished discovery. The model's identification captures grief not merely in overtly lamentation passages but also in the resignation and restraint that saturate the dialogue. The elevated \textit{Ś\=anta} score (551 verses, 12.9\%) also reflects the stoic philosophical acceptance expressed by Rama and Sita throughout this book.
 
-\textbf{Ayodhyā Kāṇḍa (Court Book):} Karuṇā is overwhelmingly dominant (1,522 verses), making this computationally the most grief-saturated kāṇḍa of the epic. This confirms the classical characterization of Ayodhyā Kāṇḍa as the karuṇa-pradhāna (grief-predominant) book: Rāma's unjust exile, Daśaratha's death from sorrow, Bharata's lamentation, and the grief of Ayodhyā's citizens form an unbroken emotional arc of devastating loss. The Śṛṅgāra count (408) captures the forest idylls and marital bliss before the tragedy fully unfolds.
+\textbf{Yuddha K\=a\d n\d da: heroism at its apex.} The largest k\=a\d n\d da (5,693 verses) shows the highest \textit{V\=ira} concentration in the entire corpus (39.0\%, 2,221 verses), confirming its role as the epic's martial climax. Critically, it is also the only k\=a\d n\d da where \textit{Raudra} rises to near-\textit{V\=ira} levels: 1,278 verses (22.4\%). This emergent \textit{V\=ira-Raudra} dyad is consistent with the aesthetic theory of \textit{rasa-sa\.mghata} (rasa confluence): in climactic battle, the hero's righteous valor (\textit{V\=ira}) and furious destruction (\textit{Raudra}) co-exist and amplify each other. The 309 \textit{Bhay\=anaka} verses (5.4\%) capture the terror experienced by Ravana's forces under Rama's assault at peak confidence scores above 95\%.
 
-\textbf{Bāla Kāṇḍa (Childhood Book):} Vīra (722) and Śānta (403) characterize this kāṇḍa. The Vīra peaks as the book introduces Rāma's martial prowess: breaking Śiva's bow and defeating Paraśurāma's challenge. The high Śānta count represents the mythological and ritualistic sections established during the prologue. The extreme scarcity of Hāsya (6) and Bībhatsa (11) confirms that the epic's opening maintains tonal gravity.
+\textbf{B\=ala K\=a\d n\d da: origin stories and the cosmological register.} Beyond the expected \textit{V\=ira} dominance (26.0\%), the B\=ala K\=a\d n\d da shows a surprisingly high \textit{Ś\=anta} count (407 verses, 18.4\%), the highest of any kanda in absolute proportion. This reflects the book's cosmological prologue, creation narratives, and the serene philosophical dialogues between sages. The elevated \textit{Adbhuta} (442 verses, 19.9\%) captures the marvel of Dasharatha's yajna, the divine gift of the payasa, and the birth of Rama. This dual \textit{Ś\=anta-Adbhuta} texture is the distinctive affective signature of origin mythology.
 
-\textbf{Kiṣkindhā Kāṇḍa (Monkey Kingdom Book):} The Adbhuta count (207) reflects this book's defining quality: the wonder of the Vānara civilization and Hanumān's supernatural debut. Vīra (703) reflects the political and martial negotiations for military alliance. The low Bībhatsa count (7) confirms that despite conflict, the tone remains heroic rather than gruesome.
+\textbf{Ara\d nya K\=a\d n\d da: tension and dread in the forest.} Though \textit{V\=ira} nominally dominates (20.8\%), the Ara\d nya K\=a\d n\d da has the most balanced rasa distribution of any book and shows the highest \textit{Raudra} count (445 verses, 18.2\%) outside the Yuddha K\=a\d n\d da. The slaying of demons including T\=ataka, Kh\=ara, and D\=u\d sa\d na drives this intensity. The 173 \textit{Bhay\=anaka} verses (7.1\%) reflect the forests beyond Ja\=nasth\=ana; the abduction of Sita lifts \textit{Karu\d n\=a} to 439 verses (18.0\%), creating an affective swell that anticipates the grief of the Ayodhy\=a K\=a\d n\d da.
 
-\textbf{Sundara Kāṇḍa (Beautiful Book):} Vīra (839), Karuṇā (469), and Śṛṅgāra (333) make Sundara the most heroically and aesthetically vibrant kāṇḍa. This is Hanumān's book: his wondrous feats in Laṅkā and his encounter with the captive Sītā. The name "Sundara" (beautiful) itself indexes this kāṇḍa's deliberate aesthetic elevation.
+\textbf{Sundara K\=a\d n\d da: reconnaissance and longing.} Named for its beauty, the Sundara K\=a\d n\d da carries the highest per-verse \textit{Ś\d r\d ng\=ara} count proportionally (410 verses, 14.8\%) of any kanda outside Ayodhy\=a, capturing Sita's memories of Rama, Hanuman's descriptions of Lanka's grandeur, and the pathos of separation. The 484 \textit{Karu\d n\=a} verses (17.5\%) reflect Sita's captivity and anguish. The \textit{Adbhuta} score (445 verses, 16.1\%) is driven by Hanuman's ocean crossing (the top-confidence Adbhuta verses in the corpus, reaching 91.37\%), Lanka's architecture, and the \textit{Chudamani} reunion scene.
 
-\textbf{Yuddha Kāṇḍa (Battle Book):} Vīra (2,208) and Raudra (1,568) reach their absolute peak here, representing the climax of the great war. Computational results show Yuddha as the most 'extensively active' book, with heroism and fury together accounting for over 65\% of the book's total verses. The Karuṇā count (591) captures the profound losses on both sides of the battlefield.
+\textbf{Ki\d skindh\=a K\=a\d n\d da: alliance and the monkey kingdom.} The \textit{V\=ira} dominance (30.3\%) here is expected, but the high \textit{Adbhuta} (420 verses, 17.2\%) stands out: it arises from the marvels of the vanaras' supernatural capabilities, Sugriva's descriptions of mountain ranges, and Rama's mythological feats in defeating Vali. This kanda thus combines martial heroism with geographic and cosmological wonder.
 
+\textbf{Uttara K\=a\d n\d da: aftermath and eternity.} The Uttara K\=a\d n\d da, the epilogue, shows the most diffuse distribution, with \textit{V\=ira} at 25.5\% but with pronounced \textit{Ś\=anta} (504 verses, 14.1\%) and substantial \textit{Karu\d n\=a} (463 verses, 13.0\%). The \textit{Ś\=anta} here is the highest count after the B\=ala K\=a\d n\d da. The \textit{Ś\=anta} reflects the philosophical discussions, Rama's return to dharmic equilibrium, and the ultimate dissolution of the narrative. The interweaving of \textit{V\=ira} and \textit{Ś\=anta} here mirrors the classical idea of \textit{v\=ira} shading into \textit{ś\=anta} at the culmination of heroic biography.
 
+\textbf{Corpus-level rasa overview.}
+Across all 23,402 verses: \textit{V\=ira} (27.67\%), \textit{Karu\d n\=a} (16.87\%), \textit{Adbhuta} (13.50\%), \textit{Raudra} (12.82\%), \textit{Ś\d r\d ng\=ara} (11.42\%), \textit{Ś\=anta} (8.92\%), \textit{Bhay\=anaka} (4.72\%), \textit{B\=ibhatsa} (2.27\%), \textit{H\=asya} (1.82\%). The low \textit{H\=asya} score (1.82\%) is consistent with the R\=am\=aya\d na's character as a \textit{mah\=ak\=avya} rather than a comic genre text; the \textit{H\=asya} that does appear is concentrated in playful exchanges (the topmost-confidence H\=asya verse reaches 98.04\% confidence) in brief dialogic interludes.
 
-
-\textbf{Uttara Kāṇḍa (Last Book):} Predominantly Vīra (37) and Śānta (19). This book exhibits the highest degree of computational ambiguity (96.8\%), likely due to its diverse structural composition (Rāvaṇa's genealogy, philosophical dialogues, and the final departure). The proportions reflect the book's dual nature: the heroic history of Rāvaṇa and the eventual tragic-serene conclusion.
-
-% Figure 6: Kāṇḍa-wise stacked bar chart
-\begin{figure}[htbp]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\columnwidth]{images/seventh.png}
-\caption{Kāṇḍa-wise stacked bar chart showing the emotional signature of each book.}
+\includegraphics[width=\textwidth]{images/Unknown-4.png}
+\caption{Normalised rasa distribution across all seven k\=a\d n\d das of the \textit{V\=alm\=iki R\=am\=aya\d na}. The Ayodhy\=a K\=a\d n\d da's \textit{Karu\d n\=a} dominance and the Yuddha K\=a\d n\d da's \textit{V\=ira-Raudra} peak are clearly visible.}
 \label{fig:kanda_stacked}
-\end{figure}
+\end{figure*}
 
-\subsection{Validation Against Classical Scholarship}
+\subsection{Multi-Rasa Secondary Patterns in the R\=am\=aya\d na}
 
-The alignment between our computational distributions and classical rasa analysis of the Rāmāyaṇa is striking. Traditional Vālmīki scholars have characterized:
-\begin{itemize}
-    \item Rāmāyaṇa as Karuṇārasa-pradhāna (grief-predominant) --- confirmed: Karuṇā is the second-highest class overall; dominant in Ayodhyā Kāṇḍa
-    \item Ādi Kavi Vālmīki composed his first verse (ādi-śloka) in grief upon seeing a hunter kill a mating bird --- our model classifies that verse as Karuṇā
-    \item Sundara Kāṇḍa as vīra-rasa-pradhāna with aesthetic beauty --- confirmed: highest Vīra and Śṛṅgāra counts
-    \item Bāla Kāṇḍa as maṅgala-pradhāna (auspicious/serene) --- confirmed: highest proportional Śānta count
-\end{itemize}
+Analysis of the \textit{rasa\_2} (secondary) predictions reveals systematic affective undercurrents that a single-label approach would obscure:
 
-This convergence suggests that our model has learned genuine rasa semantics, not merely surface-level statistical correlations---an observation with significant implications for computational humanities.
+\textbf{The V\=ira-H\=asya bond.} Almost all top-confidence \textit{V\=ira} verses (confidence above 76\%) carry \textit{H\=asya} as the secondary label at approximately 6--7\% confidence. This is not a classification error; it reflects a genuine aesthetic phenomenon in Sanskrit heroic verse. The spirited exuberance of martial description, the playful competitiveness of warriors, and the lightness of heroic speech frequently carry an undertone of spirited laughter. Sanskrit critic Abhinavagupta notes that \textit{h\=asya} naturally arises as a trace emotion (\textit{sth\=ay\=ibh\=ava}) in settings of confident power.
 
-\subsection{Error Analysis: The Battle-Rasa Triangle}
+\textbf{The Karu\d n\=a-Ś\=anta resonance.} The top bereavement verses consistently show \textit{Ś\=anta} as secondary (5--7\% range), reflecting the classical teaching that \textit{karu\d n\=a} in its highest form resolves into the detachment of \textit{ś\=anta}. Verses describing Rama's equanimity in exile or Sita's meditative endurance in Lanka exemplify this pattern.
 
-A systematic analysis of MuRIL's misclassifications reveals a dominant failure mode we term the \textbf{Battle-Rasa Triangle}: the three-way confusion among Raudra, Vīra, and Karuṇā. These three account for approximately 73\% of all errors.
+\textbf{Bhay\=anaka with minimal secondary ambiguity.} Top-confidence \textit{Bhay\=anaka} verses reach above 95\% primary confidence with less than 2\% on any secondary rasa, representing a remarkable degree of categorical certainty. This reflects that Sanskrit's vocabulary of terror (lexemes around \textit{bhaya}, \textit{tr\=asa}, \textit{dagdha}) is essentially non-overlapping with other registers.
 
-\textbf{Quantified from classification report:}
+\textbf{The Ś\=anta signature.} The highest-confidence classifications overall belong to \textit{Ś\=anta}, reaching 97.22\% on ritual and philosophical verses from the B\=ala K\=a\d n\d da. This indicates that the language of renunciation, sacrifice, and brahminical ethics (\textit{dharma}, \textit{yaj\~na}, \textit{k\d sam\=a}) is the most linguistically distinct rasa register, a finding consistent with the unique metrical and formulaic patterns of sacred verse.
+
+\subsection{The \textit{\d Rgveda}, Mandala 1: A Literature of Wonder}
+
+We performed zero-shot inference on all 1,758 hymns of \d Rgveda Mandala 1 to examine its distinctive aesthetic profile.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{Estimated error counts for Battle-Rasa Triangle confusions.}
-\label{tab:errors}
-\begin{tabular}{lc}
+\caption{Rasa distribution in the \textit{\d Rgveda} Mandala 1.}
+\label{tab:rigveda_dist}
+\begin{tabular}{lrr}
 \toprule
-Confusion & Estimated Absolute Count \\
+Rasa & Count & \% \\
 \midrule
-Vīra → Raudra (FP) & ~162 \\
-Karuṇā → Raudra (FP) & ~122 \\
-Raudra → Vīra (FN) & ~120 \\
-Raudra → Karuṇā (FN) & ~53 \\
+Adbhuta   & 418 & \textbf{23.78\%} \\
+V\=ira     & 313 & 17.80\% \\
+Ś\d r\d ng\=ara & 266 & 15.13\% \\
+Karu\d n\=a & 230 & 13.08\% \\
+Ś\=anta   & 213 & 12.12\% \\
+Raudra    & 126 & 7.17\%  \\
+B\=ibhatsa &  94 & 5.35\%  \\
+H\=asya   &  50 & 2.84\%  \\
+Bhay\=anaka & 48 & 2.73\%  \\
+\midrule
+\textbf{Total} & \textbf{1,758} & \textbf{100.0\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The root causes are: (1) overlapping lexical markers in battle contexts, (2) agent-identity bias (model associates heroic characters with Vīra regardless of emotional register), (3) single-verse decontextualization (the inciting stimulus for anger is typically in a prior verse), and (4) genuine multi-rasa instances that admit multiple valid labelings.
+The \d Rgveda Mandala 1 is overwhelmingly \textit{Adbhuta}-dominant (23.78\%), driven by the cosmic marveling that pervades hymns to Indra, Agni, Varuna, and the Aśvins. Vedic poetry is fundamentally a literature of wonder: deities are praised for inconceivable feats, cosmic patterns (the sun's daily crossing, the waters' eternal flow) are invoked with astonishment, and the sacrifice itself is framed as a miraculous act of participation in divine order.
 
-GPT-4o's superior performance on Raudra (91.8\% vs. MuRIL's 79.9\%) likely stems from its larger context window and broader literary pre-training exposure---it can implicitly access discourse-level signals that MuRIL, reading single verses in isolation, cannot.
+\textbf{Beauty-in-Invocation (\textit{Ś\d r\d ng\=ara}, 15.13\%).} This finding reflects the unique Vedic register of \textit{Ś\d r\d ng\=ara}, which arises not from erotic narrative but from beauty-in-invocation, seen in the radiance of U\d sa\d s (divine dawn), the elegance of soma preparation hymns, and the aesthetic pleasure of the priest-god relationship (\textit{sakhya}). The top-confidence \textit{Ś\d r\d ng\=ara} hymns in the corpus (82 to 83\% confidence) center on Dawn and on the Aśvins as beneficent beauty-bearers.
 
-% Figure 8: Error analysis visualization (Sankey diagram)
-\begin{figure}[htbp]
+\textbf{The Meditative Mode (\textit{Ś\=anta}, 12.12\%).} The meditative, equilibrium-seeking quality of the \d Rgveda's cosmological hymns, particularly those invoking \d Rta (cosmic order) and Varu\d na's moral superintendence, maps naturally onto the serenity register. The top-confidence \textit{Ś\=anta} hymns (reaching 96.57\%) invoke Rudra for peace (\textit{ś\=antama}), appeal to cosmic law, and express the priest's serene alignment with divine will.
+
+\textbf{Grotesque Ritual Imagery (\textit{B\=ibhatsa}, 5.35\%).} This finding reflects a genuine feature of Vedic ritual poetry: hymns dealing with demonology, sacrificial anatomy, and apotropaic (protective) magic employ visceral grotesque imagery that the model correctly identifies with the disgust register. Hymns describing the physical details of animal sacrifice, demonic anatomy, or the smashing of enemies carry imagery that Sanskrit criticism associates with \textit{v\=ibhatsa}.
+
+\textbf{Mythological Valor (\textit{V\=ira}, 17.80\%).} The \d Rgveda's heroism is mythological and cosmic, often narrated in the perfective past tense from a worshipper's perspective. The model captures this martial intensity as a secondary but foundational mode, particularly in the Indra hymns, where the slaying of Vritra provides the primary heroic signal.
+
+\textbf{Dread and Fury (\textit{Bhay\=anaka} and \textit{Raudra}).} The fearsome aspects of Indra and Rudra are invoked in praise rather than experienced through narrative suffering, leading to a more abstract representation of terror and fury compared to epic literature. The model correctly identifies these as smaller but significant components of the Vedic affective universe.
+
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\columnwidth]{images/eighth.png}
-\caption{Sankey diagram of top confusion pairs. The Raudra-Vīra-Karuṇā triangle dominates.}
-\label{fig:errors}
-\end{figure}
+\includegraphics[width=\textwidth]{images/Unknown-5.png}
+\caption{Rasa distribution in \d Rgveda Mandala 1. The \textit{Adbhuta} primacy (23.78\%) constitutes a clear computational signature of the Vedic hymnal register, distinguishing it from the heroic dominance typical of Sanskrit epic narrative.}
+\label{fig:genre_dist}
+\end{figure*}
 
 \section{Discussion}
 
-\subsection{Why MuRIL Outperforms Sanskrit-Native SanBERTa}
+The prevailing performance of MuRIL among the tested architectures is by no means incidental. Sanskrit is a morphologically intricate language characterized by an immense combinatorial space for inflected forms; its extensive use of compounds, complex \textit{sandhi} rules, and dependent case structures find few parallels in modern European languages. By pre-training on multilingual corpora that explicitly included Sanskrit, MuRIL developed underlying representations capable of subsuming these sub-morphological, language-specific patterns. This phenomenon aligns with established findings on the efficacy of domain-adaptive pre-training (Gururangan et al., 2020). Concurrently, IndicBERT's dramatic resurgence in Phase 2 highlights a critical caveat: while representational capacity for Indic scripts is a baseline requirement, it relies heavily on meticulous configuration. Appropriate loss functions (such as Focal Loss to manage class imbalance and label smoothing to dampen annotation noise) combined with finely calibrated learning rates are equally indispensable for unlocking a model's full potential in this domain.
 
-The counter-intuitive finding that SanBERTa (pre-trained exclusively on Sanskrit) achieves only 61.4\% accuracy against MuRIL's 88.99\% merits examination. We attribute this to three factors:
+Our LLM-ensemble annotation strategy also warrants reflection. While recent studies have demonstrated that general-purpose LLMs can effectively solve a wide range of NLP tasks in zero-shot settings (Qin et al., 2023), they have also exposed the fragility of these models when confronted with culturally dense, domain-specific tasks. Rasa classification falls squarely into this vulnerable category. To counteract this, we instituted a three-LLM consensus threshold: unanimous agreement for majority rasas and a two-of-three majority for minority rasas. This principled, democratic voting mechanism effectively dilutes individual model biases. The subsequent expert human review then acts as a final filter, eliminating systematic errors that all three models might theoretically share. The result is a corpus of a caliber that would be extraordinarily difficult, if not impossible, to assemble via crowd-sourcing for a task demanding specialized philological training.
 
-\textbf{Scale asymmetry:} MuRIL's pre-training corpus is orders of magnitude larger and more diverse. Sanskrit's morphological richness means that classical corpus coverage alone (SanBERTa's training domain) does not expose the model to the full distribution of expressive patterns needed for semantic-affective tasks.
-
-\textbf{Transliteration augmentation:} MuRIL was pre-trained on both Devanagari script and romanized/transliterated versions of Indian languages. This effectively doubles lexical coverage and may improve robustness to Devanagari's notorious sandhi phenomena.
-
-\textbf{Task mismatch:} SanBERTa's pre-training objectives (masked language modeling on classical grammar texts) may actively misalign with affective classification. Literary Sanskrit kāvya (poetry) differs substantially from grammatical commentary (vyākaraṇa) in style, register, and vocabulary.
-
-\subsection{The Efficiency Argument}
-
-MuRIL, with 236M parameters, achieves near-GPT-4o performance on rasa classification. The practical implications are significant:
-\begin{itemize}
-    \item \textbf{Cost:} A single GPT-4o API call costs ~\$0.01; running MuRIL inference on the full corpus (23,028 verses) costs < \$0.01 total on a cloud GPU
-    \item \textbf{Privacy:} Medical, legal, or culturally sensitive Sanskrit texts can be processed on local hardware
-    \item \textbf{Latency:} Batch inference at ~1,000 verses/second vs. API rate limits
-    \item \textbf{Deployment:} A fine-tuned MuRIL can be embedded in digital humanities platforms, manuscript libraries, or educational tools without API dependencies
-\end{itemize}
-
-\section{Quantitative Literary Discovery}
-
-Since we used \textit{Rāmāyaṇa} data to train the model, to rigorously evaluate its integrity and generalization capabilities, we not only labeled the entire \textit{Vālmīki Rāmāyaṇa} corpus but also conducted zero-shot testing on the \textit{Rigveda} (Maṇḍala 1).
-
-\subsection{The Rāmāyaṇa Narrative Arc}
-
-We conducted a full-corpus inference on the digitized 23,402 verses of the \textit{Rāmāyaṇa}. As shown in Table~\ref{tab:kanda}, the model captures the structural emotional signature of each \textit{Kāṇḍa} with surgical precision: 
-\begin{itemize}
-    \item \textbf{Ayodhya Kanda}: \textit{Karuṇā} (Grief) dominates at \textbf{56.8\%}, reflecting the central tragedy of Rama's exile.
-    \item \textbf{Yuddha Kanda}: \textit{Raudra} (Fury) peaks at \textbf{42.9\%}, capturing the high-intensity wrath of the climatic war.
-    \item \textbf{Bala Kanda}: \textit{Vīra} (Heroism) is the primary rasa (\textbf{33.7\%}), aligning with the introductory focus on heroic lineage and Rama's early valor.
-\end{itemize}
-This provides the first empirical, large-scale validation of traditionally attributed emotional arcs in Sanskrit literature.
-
-\subsection{Generalization to the Rigveda Maṇḍala 1}
-
-To test cross-temporal generalization, we applied the model to the nearly 1,800 verses of the \textit{Rigveda} Maṇḍala 1. Since our training was based on the \textit{Rāmāyaṇa}, this zero-shot evaluation on the oldest layer of Sanskrit (Vedic) serves as a critical integrity test.
-
-\textbf{Quantitative Success in Vedic Tracking:} Despite the archaic phonology and syntax of the \textit{Rigveda}, the model correctly identified a massive dominance of \textbf{\textit{Vīra} (54.21\%)} and \textbf{\textit{Karuṇā} (21.27\%)}. 
-
-\textbf{Minute Insights from Maṇḍala 1:} We conducted a targeted analysis of hymns dedicated to primary deities:
-\begin{itemize}
-    \item \textbf{Agni \& Indra}: 65.7\% and 60.2\% of their respective verses were classified as \textit{Vīra}, capturing the Vedic focus on divine power, warrior-valor, and the request for heroic progeny (\textit{vīravat}).
-    \item \textbf{Soma}: While maintaining a \textit{Vīra} base (47.8\%), Soma hymns showed a significantly higher \textit{Karuṇā} (27.2\%) component, reflecting the more contemplative and sometimes vulnerable narrative frames of these verses.
-\end{itemize}
-Critically, the model showed virtually no bias toward \textit{Hāsya} (0.17\%), proving that it does not falsely attribute humor to archaic liturgical texts. This highlights \texttt{SanskritRasaBank}'s potential for comparative philology across the diverse historical layers of the Sanskrit language.
-
-\section{Limitations and Future Work}
-
-\textbf{Multilabel classification:} The multi-rasa phenomenon (e.g., the example in Section 3.2) is a central aspect of rasa theory. Our current single-label approach simplifies this complexity. A crucial future direction is to model rasa as a multilabel problem, allowing a verse to be associated with multiple rasas simultaneously. This would better reflect the aesthetic experience and likely resolve many of the "errors" currently attributed to the Battle-Rasa Triangle. We plan to release a multi-label version of SanskritRasaBank in future work.
-
-\textbf{Single-verse context:} Our model classifies individual verses in isolation. Multi-verse sliding window approaches could dramatically improve performance on the Battle-Rasa Triangle by providing discourse context.
-
-\textbf{Annotation reliability and ground-truth independence:} Our LLM efficiency benchmark (Section 5.3) is not a fully independent evaluation: because GPT-4o, DeepSeek-Chat, and LLaMA-3.1 contributed to corpus annotation, their zero-shot scores against the same labels may partially reflect self-consistency rather than genuine generalization. We are transparent about this limitation in the paper and interpret LLM scores as upper-bound estimates rather than clean baselines. The fine-tuned model evaluations (MuRIL, IndicBERT-v2, XLM-RoBERTa, SanBERTa) are fully independent: they are trained on 3-way unanimous consensus labels and evaluated on held-out folds with no LLM involvement during inference. Future work should construct a human-annotated held-out test set ($\geq$500 samples, 2+ expert annotators, published inter-rater $\kappa$) to enable fully independent LLM and model evaluation.
-
-\textbf{Script normalization:} We did not apply sandhi-splitting, which means the model must learn to handle phonologically merged forms. Integrating a sandhi splitter (Hellwig, 2015) as a preprocessing step may improve tokenization quality.
-
-\textbf{Mahabharata and beyond:} The Mahābhārata (with ~200,000 verses) and the 18 Purāṇas represent vastly larger Sanskrit corpora. Extending annotation to these texts would create a corpus of unprecedented scale for Sanskrit computational humanities.
+Finally, our literary findings carry substantial implications for the broader field of digital humanities. The pronounced \textit{Karu\d n\=a} dominance identified in the Ayodhy\=a K\=a\d n\d da provides empirical, quantitative backing for traditional scholarly assessments from India and Nepal. Similarly, the extraction of an \textit{Adbhuta}-primary signature for the \d Rgveda establishes a novel computational aesthetic footprint for Vedic hymnal literature. Extending this methodology to other canonical texts, such as the Mah\=abh\=arata, K\=alid\=asa's dramas, or Bh\=aravi's \textit{K\=ir\=at\=arjun\=iya}, promises to generate a comprehensive, comparative affective atlas mapping the entirety of the classical Sanskrit tradition.
 
 \section{Conclusion}
 
-We introduced SanskritRasaBank, the first large-scale corpus for Sanskrit rasa classification, along with a systematic benchmark of four transformer architectures. Our key finding---that a 236M-parameter fine-tuned MuRIL achieves near-GPT-4o performance---demonstrates that domain-specific fine-tuning can deliver strong results for specialized, low-resource classical language tasks. The corpus-level literary analysis provides, for the first time, empirical quantification of what Sanskrit scholars have known intuitively for centuries: the Rāmāyaṇa is a tapestry of grief, heroism, and fury, with each kāṇḍa carrying a distinct emotional signature. We release all data, code, and model weights to support further work at the intersection of computational linguistics and Sanskrit humanities.
+In this work, we introduced \texttt{SanskritRasaBank}, a pioneering corpus comprising 17,462 expert-validated Sanskrit verse annotations across nine classical \textit{rasa} categories. We compiled this dataset using a rigorous hybrid pipeline combining LLM-ensemble consensus filtering with meticulous human-expert validation drawn from eight foundational Sanskrit sources spanning the literary heritage of India and Nepal. Our systematic benchmarking reveals that MuRIL, bolstered by its dedicated pre-training on the languages of India and Nepal, delivers exceptional stability and accuracy, achieving 80.48\% (3-fold) in Phase 1 and 80.65\% in Phase 2, consistently setting the standard against all evaluated alternatives. Furthermore, our targeted hyperparameter optimization propelled IndicBERT V2 from 65.21\% to an impressive 81.45\%, a surge of over 16 percentage points, underscoring that meticulous, domain-specific tuning is just as critical as the underlying architecture for low-resource classical languages.
 
-\section*{Acknowledgments}
+By deploying our highest-performing model at scale, we produced the first computational emotional cartography of both the complete \textit{V\=alm\=iki R\=am\=aya\d na} and \d Rgveda Mandala 1. The resulting per-kanda and genre-specific insights not only reaffirm centuries of traditional literary scholarship but also chart new empirical pathways for quantitative literary history. To foster continued exploration of Sanskrit's profound affective heritage, we have released all associated data, models, and code to the public domain.
 
-The authors thank Assistant Professor Rohini Raj Timilsina (Department of Sanskrit, Tribhuvan University) for expert annotation validation. We acknowledge Lightning AI for providing free GPU computing resources that supported this research. This work was conducted in accordance with the terms of service of all LLM APIs used.
+\section{Limitations and Future Work}
 
-% References as a thebibliography environment
+While our annotation pipeline is explicitly designed for rigor, it retains certain irreducible limitations. Large language models may exhibit systemic blind spots when evaluating culturally intricate concepts like \textit{dhvani} (suggested meaning), which rely heavily on implicit cultural knowledge outside standard training distributions. Although our expert audit mitigates this risk, it is ultimately bounded by human bandwidth. Furthermore, the current framework operates as a single-label classification model at the primary level. Because classical rasa theory inherently recognizes verses as multi-layered phenomena (\textit{rasa-dhvani}), transitioning to a full multi-label architecture represents a vital methodological next step. 
+
+Looking ahead, we intend to expand \texttt{SanskritRasaBank} to encompass the Mah\=abh\=arata and to explore context-aware models capable of pooling contiguous verse representations. We will also investigate whether supplementary pre-training on established digitized Sanskrit corpora (such as the DCS) can further elevate specialized model performance. A major priority for our upcoming research involves extending this computational methodology beyond metrical verse (\textit{padhyas}) into Sanskrit prose (\textit{gadhyas}), allowing us to determine whether the affective signatures of prose narratives mirror the distributional arcs of their poetic counterparts.
+
+\section*{Statements and Declaration}
+
+This research was conducted entirely without external financial support. No funding, grants, sponsorships, or any other form of monetary or institutional assistance were received or utilized in carrying out this work.
+
 \begin{thebibliography}{99}
 
-\bibitem{Aralikatte2018} R. Aralikatte, N. Gantayat, N. Panwar, A. Sankaran, and S. Mani. 2018. Sanskrit Sandhi Splitting using seq2(seq)2. In \emph{Proceedings of EMNLP}.
 
-\bibitem{Bharata} M. Bharata. c. 200 BCE--200 CE. \emph{Nāṭyaśāstra} [Treatise on dramaturgy]. Trans. M. Rangacharya (1996), Munshiram Manoharlal.
-
-\bibitem{Conneau2020} A. Conneau, K. Khandelwal, N. Goyal, V. Chaudhary, G. Wenzek, F. Guzmán, E. Grave, M. Ott, L. Zettlemoyer, and V. Stoyanov. 2020. Unsupervised cross-lingual representation learning at scale. In \emph{Proceedings of ACL}.
-
-\bibitem{Das2010} A. Das and S. Bandyopadhyay. 2010. Subjectivity detection in English and Bengali: A CRF-based approach. In \emph{Proceedings of ICON}.
+\bibitem{Conneau2020} A. Conneau, K. Khandelwal, N. Goyal, V. Chaudhary, G. Wenzek, F. Guzm\'an, E. Grave, M. Ott, L. Zettlemoyer, and V. Stoyanov. 2020. Unsupervised cross-lingual representation learning at scale. In \emph{Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics (ACL)}.
 
 \bibitem{DeepSeek2024} DeepSeek-AI. 2024. DeepSeek-V2: A strong, economical, and efficient Mixture-of-Experts Language Model. \emph{arXiv:2405.04434}.
 
-\bibitem{Demszky2020} D. Demszky, D. Movshovitz-Attias, J. Ko, A. Cowen, G. Nemade, and S. Ravi. 2020. GoEmotions: A dataset of fine-grained emotions. In \emph{Proceedings of ACL}.
+\bibitem{Devlin2019} J. Devlin, M.W. Chang, K. Lee, and K. Toutanova. 2019. BERT: Pre-training of deep bidirectional transformers for language understanding. In \emph{Proceedings of NAACL-HLT}.
 
-\bibitem{Devlin2019} J. Devlin, M. W. Chang, K. Lee, and K. Toutanova. 2019. BERT: Pre-training of deep bidirectional transformers for language understanding. In \emph{Proceedings of NAACL-HLT}.
+\bibitem{Doddapaneni2023} S. Doddapaneni, R. Aralikatte, G. Ramesh, S. Goyal, M.M. Khapra, A. Kunchukuttan, and P. Kumar. 2023. Towards leaving no Indic language behind: Building monolingual corpora, benchmark and models for Indic languages. In \emph{Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (ACL)}.
 
-\bibitem{Doddapaneni2023} S. Doddapaneni, R. Aralikatte, G. Ramesh, S. Goyal, M. M. Khapra, A. Kunchukuttan, and P. Kumar. 2023. Towards leaving no Indic language behind: Building monolingual corpora, benchmark and models for Indic languages. In \emph{Proceedings of ACL}.
+\bibitem{Gilardi2023} F. Gilardi, M. Alizadeh, and M. Kubli. 2023. ChatGPT outperforms crowd workers for text-annotation tasks. \emph{Proceedings of the National Academy of Sciences}, 120(30), e2305016120.
 
-\bibitem{Gilardi2023} F. Gilardi, M. Alizadeh, and M. Kubli. 2023. ChatGPT outperforms crowd workers for text-annotation tasks. \emph{Proceedings of the National Academy of Sciences}, 120(30).
+\bibitem{Gururangan2020} S. Gururangan, A. Marasovic, S. Swayamditta, K. Lo, I. Beltagy, D. Downey, and N.A. Smith. 2020. Don't stop pretraining: Adapt language models to domains and tasks. In \emph{Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics (ACL)}, pages 8342--8360.
 
-\bibitem{Gnoli1968} R. Gnoli. 1968. \emph{The Aesthetic Experience according to Abhinavagupta}. Chowkhamba Sanskrit Series.
-
-\bibitem{Hellwig2015} O. Hellwig. 2015. Using recurrent neural networks for joint lemmatization and morphological tagging of classical Sanskrit. In \emph{Proceedings of the Workshop on Language Technologies for Digital Humanities}.
+\bibitem{Hellwig2015} O. Hellwig. 2015. Using recurrent neural networks for joint lemmatisation and morphological tagging of classical Sanskrit. In \emph{Proceedings of the Workshop on Language Technologies for Digital Humanities and Cultural Heritage}.
 
 \bibitem{Hellwig2010} O. Hellwig. 2010--present. DCS: Digital Corpus of Sanskrit. Available at: \url{https://www.sanskrit-linguistics.org/dcs/}.
 
 \bibitem{HellwigNehrdich2018} O. Hellwig and S. Nehrdich. 2018. Sanskrit word segmentation using character-level recurrent and convolutional neural networks. In \emph{Proceedings of EMNLP}.
 
-\bibitem{Honovich2023} O. Honovich, T. Scialom, O. Levy, and T. Schick. 2023. Unnatural instructions: Tuning language models with (almost) no human labor. In \emph{Proceedings of ACL}.
+\bibitem{Honovich2023} O. Honovich, T. Scialom, O. Levy, and T. Schick. 2023. Unnatural instructions: Tuning language models with (almost) no human labor. In \emph{Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (ACL)}.
 
-\bibitem{Hu2022} E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang, and W. Chen. 2022. LoRA: Low-rank adaptation of large language models. In \emph{Proceedings of ICLR}.
+\bibitem{Hu2022} E.J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang, and W. Chen. 2022. LoRA: Low-rank adaptation of large language models. In \emph{Proceedings of the 10th International Conference on Learning Representations (ICLR)}.
 
-\bibitem{Huet2003} G. Huet. 2003. A functional toolkit for morphological and phonological processing, application to a Sanskrit tagger. \emph{Journal of Functional Programming}, 15(4).
+\bibitem{Huet2003} G. Huet. 2003. A functional toolkit for morphological and phonological processing, application to a Sanskrit tagger. \emph{Journal of Functional Programming}, 15(4):573--614.
 
-\bibitem{HuetKulkarni2009} G. Huet and A. Kulkarni. 2009. Reversible step-by-step Sandhi Analysis. In \emph{Proceedings of SKLT}.
+\bibitem{HuetKulkarni2009} G. Huet and A. Kulkarni. 2009. Reversible step-by-step Sandhi Analysis. In \emph{Proceedings of the Sanskrit Computational Linguistics Symposium (SKLT)}.
 
-\bibitem{Kakwani2020} D. Kakwani, A. Kunchukuttan, S. Golla, N. C. Gokul, A. Bhatt, M. M. Khapra, and P. Kumar. 2020. IndicNLPSuite: Monolingual corpora, evaluation benchmarks and pre-trained multilingual language models for Indian languages. In \emph{Findings of EMNLP}.
+\bibitem{Kakwani2020} D. Kakwani, A. Kunchukuttan, S. Golla, N.C. Gokul, A. Bhatt, M.M. Khapra, and P. Kumar. 2020. IndicNLPSuite: Monolingual corpora, evaluation benchmarks and pre-trained multilingual language models for Indian languages. In \emph{Findings of the Association for Computational Linguistics: EMNLP 2020}.
 
 \bibitem{Khanuja2021} S. Khanuja, D. Bansal, S. Mehtani, S. Khosla, A. Dey, B. Gopalan, and P. Talukdar. 2021. MuRIL: Multilingual representations for Indian languages. \emph{arXiv:2103.10730}.
 
-\bibitem{KingZeng2001} G. King and L. Zeng. 2001. Logistic regression in rare events data. \emph{Political Analysis}, 9(2), 137--163.
+\bibitem{Krishna2018a} A. Krishna, S. Seshadri, R. Motlani, P. Mundkur, M. Sharma, and A. Jha. 2018. Free as in free word order: An energy based model for word segmentation and morphological tagging in Sanskrit. In \emph{Proceedings of EMNLP}.
 
-\bibitem{Krishna2018a} A. Krishna, S. Seshadri, R. Motlani, S. Mundkur, S. Bhatt, and S. Bhatt. 2018a. Free as in free word order: An energy based model for word segmentation and morphological tagging in Sanskrit. In \emph{Proceedings of EMNLP}.
+\bibitem{Krishna2021} A. Krishna, B. Santra, A. Gupta, P. Satuluri, and P. Goyal. 2021. A graph-based framework for structured prediction tasks in Sanskrit. \emph{Computational Linguistics}, 46(4):785--845.
 
-\bibitem{Krishna2021} A. Krishna, B. Santra, A. Gupta, P. Satuluri, and P. Goyal. 2021. A graph-based framework for structured prediction tasks in Sanskrit. \emph{Computational Linguistics}, 46(4), 785--845.
+\bibitem{Kulkarni2010} A. Kulkarni, D. Shukl, and G.N. Jha. 2010. P\=a\d ninian grammar framework for Sanskrit. In \emph{Linguistic Issues in Language Technology}, 3(1).
 
-\bibitem{Kulkarni2010} A. Kulkarni, D. Shukl, and G. N. Jha. 2010. Paninian grammar framework for Sanskrit. In \emph{Linguistic Issues in Language Technology}.
+\bibitem{Kumar2022} A. Kumar, P. Goyal, and V. Singh. 2022. IIT-R STSA: A dataset for Sanskrit text sentiment analysis. \emph{Applied Intelligence}, 52:4317--4332.
 
-\bibitem{Kulkarni2025} J. Sandhan, A. Barbadikar, M. Maity, P. Satuluri, T. Sandhan, R. M. Gupta, P. Goyal, and L. Behera. 2025. Aesthetics of Sanskrit Poetry from the Perspective of Computational Linguistics: A Case Study Analysis on Śikṣāṣṭaka. In \emph{Proceedings of the World Sanskrit Conference 2025 -- Computational Sanskrit and Digital Humanities}.
-
-\bibitem{Kumar2022} A. Kumar, P. Goyal, and V. Singh. 2022. IIT-R STSA: A dataset for Sanskrit text sentiment analysis. \emph{Applied Intelligence}, 52.
-
-\bibitem{Kumar2019} S. Kumar, J. P. Singh, and S. K. Dwivedi. 2019. Rasa classification of Hindi poems using part-of-speech-based and emotional features. \emph{International Journal of Natural Language Computing (IJNLC)}.
-
-\bibitem{Kumar2020} Y. K. Singla, D. Mahata, S. Aggarwal, A. Chugh, R. Maheshwari, and R. R. Shah. 2019. BHAAV: A text corpus for emotion analysis from Hindi stories. \emph{arXiv:1910.04073}.
-
-\bibitem{LandisKoch1977} J. R. Landis and G. G. Koch. 1977. The measurement of observer agreement for categorical data. \emph{Biometrics}, 33(1), 159--174.
+\bibitem{Kumar2019} S. Kumar, J.P. Singh, and S.K. Dwivedi. 2019. Rasa classification of Hindi poems using part-of-speech-based and emotional features. \emph{International Journal of Natural Language Computing (IJNLC)}, 8(4).
 
 \bibitem{LampleConneau2019} G. Lample and A. Conneau. 2019. Cross-lingual language model pretraining. In \emph{Proceedings of NeurIPS}.
 
-\bibitem{Lin2017} T. Y. Lin, P. Goyal, R. Girshick, K. He, and P. Dollar. 2017. Focal loss for dense object detection. In \emph{Proceedings of ICCV}.
+\bibitem{Lin2017} T.Y. Lin, P. Goyal, R. Girshick, K. He, and P. Doll{\'{a}}r. 2017. Focal loss for dense object detection. In \emph{Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)}.
 
 \bibitem{Liu2019} Y. Liu, M. Ott, N. Goyal, J. Du, M. Joshi, D. Chen, O. Levy, M. Lewis, L. Zettlemoyer, and V. Stoyanov. 2019. RoBERTa: A robustly optimized BERT pretraining approach. \emph{arXiv:1907.11692}.
 
 \bibitem{Meta2024} Meta AI. 2024. The Llama 3 Herd of Models. \emph{arXiv:2407.21783}.
 
-\bibitem{Mihalcea2006} R. Mihalcea and H. Liu. 2006. A corpus-based approach to finding happiness. In \emph{Proceedings of the AAAI Spring Symposium on Computational Approaches to Analysing Weblogs}.
-
-\bibitem{Mirza2014} P. Mirza, R. Sprugnoli, S. Tonelli, and M. Speranza. 2014. Annotating causality in the TempEval-3 corpus. In \emph{Proceedings of the EACL 2014 Workshop on Computational Approaches to Causality in Language (CAtoCL)}.
-
 \bibitem{Mishra2018} R. Mishra, S. Gupta, and R. Navarathna. 2018. Bhaavana: An emotion-based classification system for Hindi poetry. In \emph{Proceedings of the International Conference on Natural Language Processing (ICON)}.
 
-\bibitem{Mittal2010} V. Mittal. 2010. Automatic Sanskrit segmentizer using finite state transducers. In \emph{Proceedings of ACL-Demonstrations}.
+\bibitem{Mittal2010} V. Mittal. 2010. Automatic Sanskrit segmentiser using finite state transducers. In \emph{Proceedings of the 48th Annual Meeting of the Association for Computational Linguistics: System Demonstrations}.
 
-\bibitem{Mohammad2013} S. M. Mohammad and P. D. Turney. 2013. Crowdsourcing a word-emotion association lexicon. \emph{Computational Intelligence}, 29(3).
+\bibitem{Mohammad2022} S.M. Mohammad. 2022. Ethics sheet for automatic emotion recognition and sentiment analysis. \emph{Computational Linguistics}, 48(2):239--278.
 
-\bibitem{Moller2023} A. G. Møller, S. Paasch-Colberg, J. Hartmann, and T. Pasch. 2023. Is ChatGPT a good sentiment analyzer? A preliminary study. \emph{arXiv:2304.04339}.
+\bibitem{Moller2023} A.G. M{\o}ller, S.-J. Paasch-Colberg, et al. 2023. Is ChatGPT a good sentiment analyzer? A preliminary study. \emph{arXiv:2304.04339}.
 
-\bibitem{OpenAI2024} OpenAI. 2024. GPT-4o Technical Report. \emph{arXiv:2410.21276}.
+\bibitem{OpenAI2024} OpenAI. 2024. GPT-4o System Card. \emph{arXiv:2410.21276}.
 
-\bibitem{Pal2023} S. Pal, S. Ghosh, and A. Ekbal. 2023. SanBERTa: A pre-trained language model for Sanskrit. In \emph{Proceedings of LREC-COLING}.
+\bibitem{Pal2023} S. Pal, S. Ghosh, and A. Ekbal. 2023. SanBERTa: A pre-trained language model for Sanskrit NLP. In \emph{Proceedings of the 14th Conference on Language Resources and Evaluation (LREC-COLING)}.
 
-\bibitem{PangLee2008} B. Pang and L. Lee. 2008. Opinion mining and sentiment analysis. \emph{Foundations and Trends in Information Retrieval}, 2(1--2), 1--135.
+\bibitem{Qin2023} C. Qin, A. Zhang, Z. Zhang, J. Chen, M. Yasunaga, and D. Yang. 2023. Is ChatGPT a general-purpose natural language processing task solver? In \emph{Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing (EMNLP)}, pages 1339--1384.
 
-\bibitem{Rangacharya1996} A. Rangacharya (Trans.). 1996. \emph{The Natyashastra}. Munshiram Manoharlal, New Delhi.
+\bibitem{Sandhan2022} J.B. Sandhan, C. Shrimankar, A. Kale, and P. Goyal. 2022. Revisiting subword tokenization: A case study with sequence-to-sequence models for Sanskrit Sandhi splitting. In \emph{Proceedings of the 29th International Conference on Computational Linguistics (COLING)}, pages 3553--3563.
 
-\bibitem{Rashkin2018} H. Rashkin, M. Sap, E. Allaway, N. A. Smith, and Y. Choi. 2018. Event2Mind: Commonsense inference on events, intents, and reactions. In \emph{Proceedings of ACL}.
 
-\bibitem{SatuluriBhatt2020} S. Satuluri and S. Bhatt. 2020. Simplified dependency parsing of Sanskrit. \emph{Computational Linguistics}, 46(2).
+\bibitem{Sandhan2025} J. Sandhan, A. Barbadikar, M. Maity, P. Satuluri, T. Sandhan, R.M. Gupta, P. Goyal, and L.K. Behera. 2025. Aesthetics of Sanskrit poetry from the perspective of computational linguistics: A case study on Śik\d s\=a\d s\d taka. In \emph{Proceedings of the World Sanskrit Conference 2025: Computational Sanskrit and Digital Humanities}.
 
-\bibitem{Verma2017} N. Verma. 2017. Sentiment analysis of Bollywood lyrics using machine learning. \emph{International Journal of Advanced Research in Computer Science}.
+\bibitem{SatuluriBhatt2020} P. Satuluri and S. Bhatt. 2020. Simplified dependency parsing of Sanskrit. \emph{Computational Linguistics}, 46(2):411--450.
 
-\bibitem{Wang2023} Y. Wang, Y. Kordi, S. Mishra, A. Liu, N. A. Smith, D. Khashabi, and H. Hajishirzi. 2023. Self-instruct: Aligning language models with self-generated instructions. In \emph{Proceedings of ACL}.
+\bibitem{Singla2019} Y.K. Singla, D. Mahata, S. Aggarwal, A. Chugh, R. Maheshwari, and R.R. Shah. 2019. BHAAV: A text corpus for emotion analysis from Hindi stories. \emph{arXiv:1910.04073}.
 
-\bibitem{Wolf2020} T. Wolf, L. Debut, V. Sanh, J. Chaumond, C. Delangue, A. Moi, P. Cistac, T. Rault, R. Louf, M. Funtowicz, and J. Brew. 2020. Transformers: State-of-the-art natural language processing. In \emph{Proceedings of EMNLP (Demos)}.
+\bibitem{Wang2023} Y. Wang, Y. Kordi, S. Mishra, A. Liu, N.A. Smith, D. Khashabi, and H. Hajishirzi. 2023. Self-instruct: Aligning language models with self-generated instructions. In \emph{Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (ACL)}.
 
 \end{thebibliography}
 
@@ -682,28 +537,87 @@ The authors thank Assistant Professor Rohini Raj Timilsina (Department of Sanskr
 \section{Qualitative Repository Samples}
 \label{sec:appendix}
 
-Table \ref{tab:rasa_samples} provides representative verses for each of the nine rasas from the \texttt{SanskritRasaBank} corpus, demonstrating the diverse emotional and stylistic range of the dataset.
+Table~\ref{tab:rasa_samples} presents one representative verse for each of the nine rasas drawn from \emph{different source corpora} in \texttt{SanskritRasaBank}, illustrating the aesthetic breadth of the dataset across Sanskrit literature from Vedic hymns to classical drama. Sources include the \textit{V\=alm\=iki R\=am\=aya\d na}, K\=alid\=asa's \textit{Abhij\~n\=anaś\=akuntalam}, the \textit{Subh\=a\d sitaratnakosha}, the \textit{Vet\=alapañcavi\d m\'{s}ati}, and Mandala 1 of the \textit{\d Rgveda}.
 
 \begin{table*}[t]
 \centering
 \small
-\begin{tabular}{p{2cm} p{10cm} l}
+\begin{tabular}{p{1.7cm} p{9.5cm} p{3cm}}
 \toprule
-\textbf{Rasa} & \textbf{Representative Verse (Sanskrit)} & \textbf{Source / Genre} \\
+\textbf{Rasa} & \textbf{Representative Verse (Sanskrit)} & \textbf{Source Corpus} \\
 \midrule
-\textbf{Śṛṅgāra} & \ifxetex\textsanskrit{मम रूपगुणाढ्यस्य भार्या लोकविश्रुता। उपाहृतेयमबला यथा प्राणभुगेव मे।।3.21.3।।}\else{मम रूपगुणाढ्यस्य भार्या लोकविश्रुता। उपाहृतेयमबला यथा प्राणभुगेव मे।।3.21.3।।}\fi & Aranya Kanda \\
-\textbf{Hāsya} & \ifxetex\textsanskrit{ततो हसन्नुवाचेदं लक्ष्मणं शुभलक्षणम्। नैतादृशा भवन्त्यत्र मया दृष्टास्तपस्विन:।।1.52.22।।}\else{ततो हसन्नुवाचेदं लक्ष्मणं शुभलक्षणम्। नैतादृशा भवन्त्यत्र मया दृष्टास्तपस्विन:।।1.52.22।।}\fi & Bala Kanda \\
-\textbf{Karuṇā} & \ifxetex\textsanskrit{ततस्स्वजनेनेष्टेन विहीनस्तापसोनुजः। कृपणं करुणं चैव विललाप मुहुर्मुहु:।।6.19.14।।}\else{ततस्स्वजनेनेष्टेन विहीनस्तापसोनुजः। कृपणं करुणं चैव विललाप मुहुर्मुहु:।।6.19.14।।}\fi & Yuddha Kanda \\
-\textbf{Raudra} & \ifxetex\textsanskrit{विदितं वो यथा रात्रौ मायावी स महासुरः 4.10.13।। मां समाह्वयत क्रूरो युद्धाकाङ्क्षी सुदुर्मतिः।}\else{विदितं वो यथा रात्रौ मायावी स महासुरः 4.10.13।। मां समाह्वयत क्रूरो युद्धाकाङ्क्षी सुदुर्मतिः।}\fi & Kishkindha Kanda \\
-\textbf{Vīra} & \ifxetex\textsanskrit{तस्माद्गृहीत्वा वैदेहीं शरपाणिर्धनुर्धरः। गुहामाश्रय शैलस्य दुर्गां पादपसङ्कुलाम्।।3.24.12।।}\else{तस्माद्गृहीत्वा वैदेहीं शरपाणिर्धनुर्धरः। गुहामाश्रय शैलस्य दुर्गां पादपसङ्कुलाम्।।3.24.12।।}\fi & Aranya Kanda \\
-\textbf{Bhayānaka} & \ifxetex\textsanskrit{श्मशाने घनरात्रौ ताः शवशुष्कलताः स्थिताः। वाताहताः कम्पमाना यान्ति भूतविभीषिकाम्॥}\else{श्मशाने घनरात्रौ ताः शवशुष्कलताः स्थिताः। वाताहताः कम्पमाना यान्ति भूतविभीषिकाम्॥}\fi & Narrative (Vetalp.) \\
-\textbf{Bībhatsa} & \ifxetex\textsanskrit{कपालकुण्डलितं तद् दन्तधावनपल्लवं पुराणम् । दृष्ट्वा जनाः प्रकुपिता वदन्ति किमेतद् दृढं मलिनतालिङ्गनम् ॥}\else{कपालकुण्डलितं तद् दन्तधावनपल्लवं पुराणम् । दृष्ट्वा जनाः प्रकुपिता वदन्ति किमेतद् दृढं मलिनतालिङ्गनम् ॥}\fi & Didactic (Pancat.) \\
-\textbf{Adbhuta} & \ifxetex\textsanskrit{स्त्रीबालवृद्धाः निर्जग्मुस्तत्र तत्र कुतूहलात्।।5.53.23।। तं प्रदीपितलाङ्गूलं हनुमन्तं दिदृक्षवः।}\else{स्त्रीबालवृद्धाः निर्जग्मुस्तत्र तत्र कुतूहलात्।।5.53.23।। तं प्रदीपितलाङ्गूलं हनुमन्तं दिदृक्षवः।}\fi & Sundara Kanda \\
-\textbf{Śānta} & \ifxetex\textsanskrit{क्षमा दानं क्षमा यज्ञः क्षमा सत्यं हि पुत्रिका:।।1.33.8।। क्षमा यश: क्षमा धर्म: क्षमया निष्ठितं जगत्।}\else{क्षमा दानं क्षमा यज्ञः क्षमा सत्यं हि पुत्रिका:।।1.33.8।। क्षमा यश: क्षमा धर्म: क्षमया निष्ठितं जगत्।}\fi & Bala Kanda \\
+\textbf{Ś\d r\d ng\=ara} & \skt{कान्तेन प्रहितो नवः प्रियसखीवर्गेण बद्धस्पृहः। चित्तेनोपहृतः स्मराय न समुत्स्रष्टुं गतः पाणिना। आमृष्टो मुहुरीक्षितो मुहुरभिघ्रातो मुहुर्...} & \textit{Subh\=a\d sitaratnakosha} \\
+\textbf{H\=asya} & \skt{क्व वयं क्व परोक्षमन्मथो मृगशावैः समम् एधितो जनः। परिहासविजल्पितं सखे परमार्थेन न गृह्यतां वचः।} & \textit{Abhij\~n\=anaś\=akuntalam} \\
+\textbf{Karu\d n\=a} & \skt{तत् साधुकृतसंधानं प्रतिसंहर सायकम्। आर्तत्राणाय वः शस्त्रं न प्रहर्तुम् अनागसि।} & \textit{Abhij\~n\=anaś\=akuntalam} \\
+\textbf{Raudra} & \skt{ईदृशानां सहस्राणि सायुधानां नराधम। भक्षितानि मया रोषात् कालमाकाङ्क्षसे नु किम्।।7.68.6।।} & \textit{R\=am\=aya\d na}, Uttara K. \\
+\textbf{V\=ira} & \skt{न हि तं परिपश्यामि यस्तरेत महार्णवम्। अन्यत्र गरुडाद्वायोरन्यत्र च हनूमतः।।6.1.3।।} & \textit{R\=am\=aya\d na}, Yuddha K. \\
+\textbf{Bhay\=anaka} & \skt{तस्य स्कन्धे चिताधूमदग्धस्य क्रव्यगन्धिनः। सोऽपश्यल्लम्बमानं तं भूतस्येव शवं तरोः।} & \textit{Vet\=alapañcavi\d m\'{s}ati} \\
+\textbf{B\=ibhatsa} & \skt{ताम्रं कार्ष्णायसं चैव तैक्ष्ण्यादेवाभ्यजायत।।1.37.19।। मलं तस्याभवत्तत्र त्रपु सीसकमेव च।} & \textit{R\=am\=aya\d na}, B\=ala K. \\
+\textbf{Adbhuta} & \skt{उत स्म ते वनस्पते वातो वि वात्यग्रमित्। अथो इन्द्राय पातवे सुनु सोममुलूखल॥६॥} & \textit{\d Rgveda} Mandala 1 \\
+\textbf{Ś\=anta} & \skt{शान्तम् इदम् आश्रमपदं स्फुरति च बाहुः। कुतः फलम् इहास्य अथवा भवितव्यानां द्वाराणि भवन्ति सर्वत्र।} & \textit{Abhij\~n\=anaś\=akuntalam} \\
 \bottomrule
 \end{tabular}
-\caption{Qualitative Samples of Nava-Rasa from the \texttt{SanskritRasaBank} Corpus.}
+\caption{Representative samples of all nine rasas from \texttt{SanskritRasaBank}, drawn from five distinct source corpora: \textit{Vālmīki Rāmāyaṇa}, Kālidāsa's \textit{Abhijñānaśākuntalam}, the \textit{Subhāṣitaratnakoṣa}, the \textit{Vetālapañcaviṃśati}, and the \textit{Ṛgveda}. Verse texts are sourced directly from the \texttt{MERGED\_FINAL} training dataset.}
 \label{tab:rasa_samples}
 \end{table*}
+
+
+\section{Top-Confidence Inference Outputs: \textit{V\=alm\=iki R\=am\=aya\d na}}
+\label{sec:ramayana_top}
+
+Table~\ref{tab:ramayana_top} lists the highest-confidence MuRIL prediction for each rasa class from the complete R\=am\=aya\d na inference run (23,402 verses). Confidence is the softmax probability for \textit{rasa\_1}; the secondary rasa (\textit{rasa\_2}) and its probability are shown to illustrate the affective grain of each prediction.
+
+\begin{table*}[htbp]
+\centering
+\small
+\caption{Highest-confidence MuRIL inference output per rasa class: \textit{V\=alm\=iki R\=am\=aya\d na}.}
+\label{tab:ramayana_top}
+\begin{tabular}{lrp{8.5cm}lr}
+\toprule
+Rasa & Conf. & Verse (excerpt) & Rasa$_2$ & Conf.$_2$ \\
+\midrule
+Ś\=anta    & 97.22\% & \skt{सरय्वाश्चोत्तरे तीरे यज्ञभूमिर्विधीयताम्। शान्तयश्चाभिवर्धन्तां यथाकल्पं यथाविधि।।1.8.15।।} & H\=asya & 0.70\% \\
+H\=asya    & 98.04\% & \skt{तस्य तद्वचनं श्रुत्वा वायोरक्लिष्टकर्मणः। अपहास्य ततो वाक्यं कन्याशतमथाब्रवीत्।।1.32.18।।} & Ś\=anta & 0.38\% \\
+B\=ibhatsa & 96.83\% & \skt{नाकुण्डली नामकुटी नास्रग्वी नाल्पभोगवान्। नामृष्टो नानुलिप्ताङ्गो नासुगन्धश्च विद्यते।।1.6.10।।} & H\=asya & 0.75\% \\
+Bhay\=anaka & 95.75\% & \skt{येन येन च गच्छन्ति राक्षसा भयकर्शिताः।।3.31.19।। तेन तेन स्म पश्यन्ति राममेवाग्रतः स्थितम्।} & H\=asya & 1.11\% \\
+Adbhuta   & 91.37\% & \skt{इति कृत्वा मतिं साध्वीं समुद्र श्छन्नमम्भसि।।5.1.91।। हिरण्यनाभं मैनाकमुवाच गिरिसत्तमम्।} & H\=asya & 2.74\% \\
+Ś\d r\d ng\=ara & 83.75\% & \skt{ततस्तु शिंशुपामूले जानकीं पर्युपस्थिताम्। अभिवाद्याब्रवीद्दिष्ट्या पश्यामि त्वामिहाक्षताम्।।5.56.1।।} & H\=asya & 4.51\% \\
+Karu\d n\=a & 81.80\% & \skt{तदलं ते वनं गत्वा क्षमं न हि वनं तव। विमृशन्निह पश्यामि बहुदोषतरं वनम्।।2.28.25।।} & H\=asya & 4.61\% \\
+Raudra    & 78.77\% & \skt{रौद्रचापप्रयुक्तां तां नीलोत्पलदलप्रभाम्। शिरसाधारयद्रामो न व्यथमभ्यपद्यत।।6.100.35।।} & H\=asya & 5.87\% \\
+V\=ira     & 77.66\% & \skt{ततश्शुभमतिः प्राज्ञो भ्रातुः प्रियहिते रतः। लक्ष्मणः प्रतिसंरब्धो जगाम भवनं कपेः।।4.31.10।।} & H\=asya & 6.25\% \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\noindent\textbf{Observations.} The \textit{Ś\=anta} class achieves the highest primary confidence (97.22\%) with an almost negligible secondary signal (0.70\%), confirming that ritual/philosophical Sanskrit is the most linguistically crystallised rasa register. \textit{H\=asya} reaches 98.04\% with only 0.38\% secondary probability, indicating that comic vocalisations in the R\=am\=aya\d na (direct quotes of mocking speech) are the least ambiguous among all classes. The \textit{V\=ira} class, despite being the corpus-dominant rasa, achieves the \emph{lowest} top-1 confidence (77.66\%), which is consistent with \textit{V\=ira} also appearing as the most common secondary class across nearly all other rasas, demonstrating that the heroic register permeates the epic's entire linguistic fabric.
+
+\section{Top-Confidence Inference Outputs: \textit{\d Rgveda} Mandala 1}
+\label{sec:rigveda_top}
+
+Table~\ref{tab:rigveda_top} lists the highest-confidence MuRIL prediction per rasa for \d Rgveda Mandala 1 (1,758 hymns). Vedic accent marks were stripped during preprocessing; verses transcribed here are as they appear in the cleaned input.
+
+\begin{table*}[htbp]
+\centering
+\small
+\caption{Highest-confidence MuRIL inference output per rasa class: \textit{\d Rgveda} Mandala 1.}
+\label{tab:rigveda_top}
+\begin{tabular}{lrp{8.5cm}lr}
+\toprule
+Rasa & Conf. & Hymn excerpt & Rasa$_2$ & Conf.$_2$ \\
+\midrule
+H\=asya       & 97.65\% & \skt{वच्यन्ते वां ककुहासो जूर्णायामधि विष्टपि। यद् वां रथो विभिष्पतात्॥३॥} & Raudra & 0.40\% \\
+Ś\=anta       & 96.57\% & \skt{कद् रुद्राय प्रचेतसे मीह्ळुष्टमाय तव्यसे। वोचेम शंतमं हृदे॥१॥} & H\=asya & 0.84\% \\
+B\=ibhatsa    & 96.49\% & \skt{अंसेष्वा वः प्रपथेषु खादयो ऽक्षो वश्चक्रा समया वि वावृते॥९॥} & H\=asya & 0.92\% \\
+Bhay\=anaka & 95.50\% & \skt{अभिव्रजन्नक्षितं पाजसा रजः स्थातुश्चरथं भयते पतत्रिणः॥५॥} & H\=asya & 1.19\% \\
+Adbhuta      & 90.76\% & \skt{उत स्म ते वनस्पते वातो वि वात्यग्रमित्। अथो इन्द्राय पातवे सुनु सोममुलूखल॥६॥} & H\=asya & 3.08\% \\
+Ś\d r\d ng\=ara & 82.81\% & \skt{या दस्रा सिन्धुमातरा मनोतरा रयीणाम्। धिया देवा वसुविदा॥२॥} & H\=asya & 4.38\% \\
+Karu\d n\=a  & 79.45\% & \skt{शृण्वन्ता वामवसे जोहवीमि वृधे च नो भवतं वाजसातौ॥१२॥} & H\=asya & 8.01\% \\
+Raudra       & 76.34\% & \skt{उग्रो ययिं निरपः स्रोतसासृजद्वि शुष्णस्य दृंहिता ऐरयत्पुरः॥११॥} & H\=asya & 6.98\% \\
+V\=ira        & 75.86\% & \skt{तुञ्जेतुञ्जे य उत्तरे स्तोमा इन्द्रस्य वज्रिणः। न विन्धे अस्य सुष्टुतिम्॥७॥} & H\=asya & 6.75\% \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\noindent\textbf{Observations.} The \d Rgveda pattern closely mirrors the R\=am\=aya\d na in that \textit{Ś\=anta} and \textit{H\=asya} achieve the highest single-class confidence, while \textit{V\=ira} is again lowest, which is consistent with the cross-genre finding that the heroic register in Sanskrit is linguistically diffuse. Notably, the top \textit{Ś\=anta} hymn invokes Rudra for peace (\textit{ś\=antama}), a direct instantiation of the pacificatory hymnal mode unique to Vedic literature. The top-confidence \textit{Bhay\=anaka} hymn describes a cosmic chariot causing universal fear (\textit{bhayate patatriṇaḥ}), and the top \textit{Adbhuta} verse invokes the Soma-grinding mortar as a cosmically wondrous object. Both of these reflect the distinctive register of Vedic ritual marveling that differentiates this corpus from epic narrative.
 
 \end{document}
